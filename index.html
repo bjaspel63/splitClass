@@ -37,8 +37,7 @@
       <div class="input-group">
         <label for="roomInput">Room Name</label>
         <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
-        <!-- Room name display below input -->
-        <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: #333;"></div>
+        
       </div>
 
       <div class="buttons">
@@ -52,6 +51,8 @@
     <!-- Main Section (Teacher or Student view) -->
     <section id="main" class="hidden" role="main" aria-label="Classroom">
       <!-- Left Pane (Teacher: 25% student list, Student: 50% video) -->
+      <!-- Room name display below input -->
+      <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: #333;"></div>
       <div id="leftPane">
         <!-- Teacher student list -->
         <div id="studentsListContainer" class="hidden" aria-label="Students attending">
