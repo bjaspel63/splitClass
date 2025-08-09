@@ -297,6 +297,11 @@ function connectSignaling(room, role, extraPayload = {}) {
           }
         }
         break;
+        
+        case "error":
+  				status.textContent = `Error: ${data.message || "Unknown error"}`;
+  				resetUIAfterError();
+  				break;
 
       case "candidate":
         if (isTeacher) {
