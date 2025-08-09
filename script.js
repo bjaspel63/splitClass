@@ -20,6 +20,10 @@ const editorFrame = document.getElementById("editorFrame");
 
 const studentNameInput = document.getElementById("studentNameInput");
 
+// New elements for showing joined info in setup
+const displayName = document.getElementById("displayName");
+const displayRoom = document.getElementById("displayRoom");
+
 let ws = null;
 let roomName = null;
 let isTeacher = false;
@@ -58,7 +62,7 @@ function updateStudentCount() {
 
 function updateUIForRole() {
   if (isTeacher) {
-    // Teacher: left pane is attendance only, right pane notes visible
+    // Teacher: left pane 25%, right pane 75% notes visible
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
     studentsListContainer.style.display = "block";
@@ -73,8 +77,13 @@ function updateUIForRole() {
     btnShareScreen.style.display = "inline-block";
     btnShareScreen.disabled = false;
     btnCloseSession.style.display = "inline-block";
+
+    // Adjust main section layout for teacher (25% left, 75% right)
+    mainSection.classList.remove("student-equal-sides");
+    mainSection.classList.add("teacher-wide-notes");
+
   } else {
-    // Student: left pane full video, right pane Trinket visible, notes hidden
+    // Student: left pane and right pane equal width (50%-50%)
     leftPane.classList.remove("teacher-no-video");
     leftPane.classList.add("student-full");
     video.style.display = "block";
@@ -87,6 +96,36 @@ function updateUIForRole() {
     studentCountDiv.style.display = "none";
     btnShareScreen.style.display = "none";
     btnCloseSession.style.display = "inline-block";
+
+    // Adjust main section layout for student (50-50)
+    mainSection.classList.add("student-equal-sides");
+    mainSection.classList.remove("teacher-wide-notes");
+  }
+}
+
+/**
+ * Show joined info in setup section after role selected:
+ * - Teacher: show only room name text (hide inputs and labels)
+ * - Student: show student name and room name texts (hide inputs and labels)
+ */
+function showJoinedInfo() {
+  // Hide all inputs and their labels
+  studentNameInput.style.display = "none";
+  studentNameInput.previousElementSibling.style.display = "none"; // label for Your Name
+  roomInput.style.display = "none";
+  roomInput.previousElementSibling.style.display = "none"; // label for Room Name
+
+  if (isTeacher) {
+    // Show room name only
+    displayName.style.display = "none";
+    displayRoom.textContent = roomName;
+    displayRoom.style.display = "block";
+  } else {
+    // Show student name and room name
+    displayName.textContent = studentName;
+    displayName.style.display = "block";
+    displayRoom.textContent = roomName;
+    displayRoom.style.display = "block";
   }
 }
 
@@ -107,31 +146,29 @@ function connectSignaling(room, role, extraPayload = {}) {
 
   ws.onmessage = async (ev) => {
     let data;
-    try { data = JSON.parse(ev.data); } catch { return; }
+    try {
+      data = JSON.parse(ev.data);
+    } catch {
+      return;
+    }
 
     switch (data.type) {
       case "joined":
         isTeacher = (data.role === "teacher");
         status.textContent = `Joined room as ${data.role}.`;
 
+        // Store values for display
+        roomName = room;
+        studentName = extraPayload.name || "Anonymous";
+
         // Hide initial inputs/buttons and show joined room info
         btnTeacher.style.display = "none";
         btnStudent.style.display = "none";
-        studentNameInput.style.display = "none";
-        roomInput.style.display = "none";
 
-        // Show Close Session button on both sides
-        btnCloseSession.style.display = "inline-block";
-
-        setupSection.classList.add("hidden");
+        setupSection.classList.remove("hidden"); // Keep setup visible to show joined info
         mainSection.classList.remove("hidden");
 
-        // Adjust layout classes for student equal panes
-        if (!isTeacher) {
-          mainSection.classList.add("student-equal-sides");
-        } else {
-          mainSection.classList.remove("student-equal-sides");
-        }
+        showJoinedInfo();
 
         updateUIForRole();
 
@@ -147,7 +184,6 @@ function connectSignaling(room, role, extraPayload = {}) {
         } else {
           if (data.id) {
             studentId = data.id;
-            studentName = data.name || extraPayload.name || "Anonymous";
             status.textContent = `Student ready: ${studentName}`;
           }
         }
@@ -168,7 +204,9 @@ function connectSignaling(room, role, extraPayload = {}) {
         if (isTeacher && data.id) {
           if (teacherPeers[data.id]) {
             if (teacherPeers[data.id].pc) {
-              try { teacherPeers[data.id].pc.close(); } catch {}
+              try {
+                teacherPeers[data.id].pc.close();
+              } catch {}
             }
             delete teacherPeers[data.id];
             updateStudentCount();
@@ -201,11 +239,15 @@ function connectSignaling(room, role, extraPayload = {}) {
           const from = data.from;
           const cand = data.payload;
           if (from && teacherPeers[from] && teacherPeers[from].pc) {
-            try { await teacherPeers[from].pc.addIceCandidate(cand); } catch {}
+            try {
+              await teacherPeers[from].pc.addIceCandidate(cand);
+            } catch {}
           }
         } else {
           if (studentPc) {
-            try { await studentPc.addIceCandidate(data.payload); } catch {}
+            try {
+              await studentPc.addIceCandidate(data.payload);
+            } catch {}
           }
         }
         break;
@@ -214,7 +256,9 @@ function connectSignaling(room, role, extraPayload = {}) {
         teacherDisconnected.classList.remove("hidden");
         status.textContent = "Teacher disconnected.";
         if (studentPc) {
-          try { studentPc.close(); } catch {}
+          try {
+            studentPc.close();
+          } catch {}
           studentPc = null;
         }
         break;
@@ -239,14 +283,16 @@ function connectSignaling(room, role, extraPayload = {}) {
 async function offerToStudent(studentId) {
   if (!screenStream) return;
   if (teacherPeers[studentId] && teacherPeers[studentId].pc) {
-    try { teacherPeers[studentId].pc.close(); } catch {}
+    try {
+      teacherPeers[studentId].pc.close();
+    } catch {}
     teacherPeers[studentId].pc = null;
   }
 
   const pc = new RTCPeerConnection(rtcConfig);
   teacherPeers[studentId].pc = pc;
 
-  screenStream.getTracks().forEach(track => pc.addTrack(track, screenStream));
+  screenStream.getTracks().forEach((track) => pc.addTrack(track, screenStream));
 
   pc.onicecandidate = (evt) => {
     if (evt.candidate) {
@@ -322,7 +368,7 @@ async function startScreenShare() {
 
 function stopScreenShare() {
   if (!screenStream) return;
-  screenStream.getTracks().forEach(t => t.stop());
+  screenStream.getTracks().forEach((t) => t.stop());
   screenStream = null;
   isSharing = false;
   video.srcObject = null;
@@ -330,7 +376,9 @@ function stopScreenShare() {
 
   for (const peer of Object.values(teacherPeers)) {
     if (peer.pc) {
-      try { peer.pc.close(); } catch {}
+      try {
+        peer.pc.close();
+      } catch {}
       peer.pc = null;
     }
   }
@@ -351,13 +399,17 @@ function closeSession() {
     stopScreenShare();
     for (const peer of Object.values(teacherPeers)) {
       if (peer.pc) {
-        try { peer.pc.close(); } catch {}
+        try {
+          peer.pc.close();
+        } catch {}
         peer.pc = null;
       }
     }
   } else {
     if (studentPc) {
-      try { studentPc.close(); } catch {}
+      try {
+        studentPc.close();
+      } catch {}
       studentPc = null;
     }
     video.srcObject = null;
@@ -384,6 +436,15 @@ function closeSession() {
   studentCountDisplay.textContent = "0";
 
   notesArea.value = "";
+  
+  // Reset display info and show inputs + labels again
+  displayName.style.display = "none";
+  displayRoom.style.display = "none";
+
+  studentNameInput.style.display = "block";
+  studentNameInput.previousElementSibling.style.display = "block";
+  roomInput.style.display = "block";
+  roomInput.previousElementSibling.style.display = "block";
 }
 
 /* --- Event listeners --- */
@@ -431,3 +492,5 @@ studentCountDiv.style.display = "none";
 studentsListContainer.style.display = "none";
 notesArea.classList.add("hidden");
 editorFrame.classList.remove("hidden");
+displayName.style.display = "none";
+displayRoom.style.display = "none";
