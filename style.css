@@ -10,6 +10,7 @@ html, body {
   font-family: system-ui, sans-serif;
   color: #f1f5f9;
   overflow: hidden;
+  overflow-x: hidden; /* prevent horizontal scroll */
 }
 
 #app {
@@ -166,20 +167,21 @@ footer {
   position: fixed;
   top: 0; 
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  margin: 0;
-  border-radius: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
   z-index: 9999;
   background: black;
   box-shadow: none;
 }
 
 #leftPane.fullscreen video {
-  width: 100vw;
-  height: 100vh;
+  width: 100vw !important;
+  height: 100vh !important;
   object-fit: contain; /* Use contain to avoid cropping */
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 /* Hide other UI elements when fullscreen */
