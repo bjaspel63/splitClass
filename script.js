@@ -98,10 +98,11 @@ function updateUIForRole() {
 }
 
 function showJoinedInfo() {
+  // Hide inputs and labels
   studentNameInput.style.display = "none";
-  studentNameInput.previousElementSibling.style.display = "none";
+  studentNameInput.previousElementSibling?.style.display = "none";
   roomInput.style.display = "none";
-  roomInput.previousElementSibling.style.display = "none";
+  roomInput.previousElementSibling?.style.display = "none";
 
   if (isTeacher) {
     displayName.style.display = "none";
@@ -460,9 +461,9 @@ function closeSession() {
   displayRoom.previousElementSibling?.style.display = "none";
 
   studentNameInput.style.display = "block";
-  studentNameInput.previousElementSibling.style.display = "block";
+  studentNameInput.previousElementSibling?.style.display = "block";
   roomInput.style.display = "block";
-  roomInput.previousElementSibling.style.display = "block";
+  roomInput.previousElementSibling?.style.display = "block";
 
   btnTeacher.style.display = "inline-block";
   btnStudent.style.display = "inline-block";
@@ -471,6 +472,7 @@ function closeSession() {
 /* --- Event listeners --- */
 
 btnTeacher.addEventListener("click", () => {
+  status.textContent = ""; // Clear previous errors
   roomName = roomInput.value.trim();
   const nameVal = studentNameInput.value.trim() || "Teacher";
   if (!roomName) {
@@ -482,6 +484,7 @@ btnTeacher.addEventListener("click", () => {
 });
 
 btnStudent.addEventListener("click", () => {
+  status.textContent = ""; // Clear previous errors
   roomName = roomInput.value.trim();
   const nameVal = studentNameInput.value.trim();
   if (!roomName) {
@@ -516,9 +519,10 @@ if (btnDownloadNotes) {
 
 /* --- Init --- */
 
-document.addEventListener("DOMContentLoaded", () => {
+function initUI() {
   status.textContent = "Enter room name and your name, then select role to join.";
   btnShareScreen.style.display = "none";
+  btnShareScreen.disabled = true;
   teacherControls.classList.add("hidden");
   studentControls.classList.add("hidden");
   studentsListContainer.style.display = "none";
@@ -527,6 +531,22 @@ document.addEventListener("DOMContentLoaded", () => {
   displayName.style.display = "none";
   displayRoom.style.display = "none";
 
+  studentNameInput.style.display = "block";
+  studentNameInput.previousElementSibling?.style.display = "block";
+  roomInput.style.display = "block";
+  roomInput.previousElementSibling?.style.display = "block";
+
   btnTeacher.style.display = "inline-block";
   btnStudent.style.display = "inline-block";
+
+  setupSection.classList.remove("hidden");
+  mainSection.classList.add("hidden");
+
+  leftPane.classList.remove("teacher-no-video", "student-full");
+  document.getElementById("rightPane").style.display = "flex";
+  mainSection.classList.remove("teacher-role", "student-role");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initUI();
 });
