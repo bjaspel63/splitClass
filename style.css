@@ -75,31 +75,72 @@ header {
   border-bottom: 1px solid #334155;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 2rem;
   flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
-#setup label {
-  font-weight: 600;
-  min-width: 80px;
+/* Input groups for label below input */
+.input-group {
+  display: flex;
+  flex-direction: column-reverse;
+  flex: 1 1 220px;
+  max-width: 250px;
 }
 
-#roomInput,
-#studentNameInput {
+.input-group input {
   padding: 0.4rem 0.6rem;
   font-size: 1rem;
   border-radius: 6px;
   border: none;
-  width: 250px;
   background: #1e293b;
   color: #f1f5f9;
 }
 
-#roomInput::placeholder,
-#studentNameInput::placeholder {
+.input-group input::placeholder {
   color: #94a3b8;
 }
 
+.input-group label {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+/* Align inputs and student count horizontally on desktop */
+@media (min-width: 600px) {
+  #setup {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .input-group {
+    flex-direction: row;
+    align-items: center;
+    max-width: none;
+    flex: 0 0 auto;
+  }
+
+  .input-group input {
+    margin-right: 0.5rem;
+    flex: 1 1 150px;
+  }
+
+  .input-group label {
+    margin: 0;
+    min-width: 100px;
+    color: #cbd5e1;
+  }
+
+  /* Align student count and room input */
+  #studentCount {
+    margin-left: 0;
+    margin-top: 0;
+    order: 3;
+  }
+}
+
+/* Status text */
 #status {
   font-weight: 600;
   color: #f97316;
@@ -115,7 +156,7 @@ header {
   overflow: hidden;
 }
 
-/* Left pane is flex column, split vertically */
+/* Left pane */
 #leftPane {
   flex: 1;
   background: #0f172a;
@@ -128,39 +169,23 @@ header {
   box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
 }
 
-/* Video container takes 2/3 height */
-#leftPane video {
-  flex: 2 1 auto;
+/* Video takes full width for student */
+#leftPane.student-full video {
+  flex: 1 1 auto;
   width: 100%;
+  height: 100%;
   object-fit: contain;
   background: black;
   border-radius: 10px 10px 0 0;
 }
 
-/* Teacher disconnected message over video */
-#teacherDisconnected {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #ef4444;
-  font-weight: 700;
-  font-size: 1.3rem;
-  text-align: center;
+/* Hide video for teacher (leftPane only has attendance list) */
+#leftPane.teacher-no-video video {
   display: none;
-  background: rgba(0,0,0,0.6);
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  pointer-events: none;
 }
 
-#teacherDisconnected.visible {
-  display: block;
-}
-
-/* Student attendance list container takes 1/3 height */
+/* Student attendance list container */
 #studentsListContainer {
-  flex: 1 1 auto;
   background: #111827;
   border-top: 1px solid #334155;
   padding: 0.5rem 1rem;
@@ -168,12 +193,7 @@ header {
   font-weight: 600;
   overflow-y: auto;
   user-select: none;
-  display: none; /* show only for teacher when students exist */
-}
-
-/* Show container when not hidden */
-#studentsListContainer:not(.hidden) {
-  display: block;
+  flex: 1 1 auto;
 }
 
 #studentsListContainer h3 {
@@ -231,7 +251,7 @@ footer {
   color: #94a3b8;
 }
 
-/* Fullscreen left pane */
+/* Fullscreen left pane for student */
 #leftPane.fullscreen {
   position: fixed;
   top: 0;
