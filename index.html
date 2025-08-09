@@ -3,69 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SplitClass App</title>
+  <title>SplitClass + Trinket</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Main Join Page -->
-  <section id="joinPage" role="main" aria-label="Join SplitClass">
-    <h1>SplitClass App</h1>
-    <div>
-      <label for="studentNameInput">Your Name:</label>
-      <input id="studentNameInput" type="text" autocomplete="off" placeholder="Enter your name" />
-    </div>
-    <div>
-      <label for="roomInput">Room Name:</label>
-      <input id="roomInput" type="text" autocomplete="off" placeholder="Enter room name" />
-    </div>
-    <div>
-      <button id="btnTeacher" type="button">Join as Teacher</button>
-      <button id="btnStudent" type="button">Join as Student</button>
-    </div>
-    <p id="status" aria-live="polite"></p>
-  </section>
-
-  <!-- Room Page -->
-  <section id="roomPage" role="main" aria-label="SplitClass Room" style="display:none;">
+  <div id="app">
+    <!-- Header (common) -->
     <header>
-      <div>
-        <h1>SplitClass App</h1>
-        <p id="headerRoomName" aria-live="polite"></p>
-      </div>
-      <div id="teacherButtons" style="display:none;">
-        <button id="btnShareScreen" type="button">Share Screen</button>
-        <button id="btnDownloadNotes" type="button">Download Notes</button>
-        <button id="btnCloseSession" type="button">Close</button>
-      </div>
-      <div id="studentButtons" style="display:none;">
-        <button id="btnCloseSessionStudent" type="button">Close</button>
-      </div>
+      <div id="appTitle">SplitClass + Trinket</div>
+      <div id="roomDisplay" class="hidden"></div>
     </header>
 
-    <main id="roomMain">
-      <!-- Teacher layout panes -->
-      <aside id="teacherLeftPane" aria-label="Student List" style="display:none;">
-        <h2>Students</h2>
-        <ul id="studentsList"></ul>
-      </aside>
-      <section id="teacherRightPane" style="display:none;">
-        <textarea id="notesArea" placeholder="Enter notes here..."></textarea>
-      </section>
+    <!-- Landing Page / Setup -->
+    <section id="setup">
+      <h1>Welcome to SplitClass</h1>
 
-      <!-- Student layout panes -->
-      <section id="studentLeftPane" style="display:none;">
-        <video id="video" autoplay playsinline muted></video>
-      </section>
-      <section id="studentRightPane" style="display:none;">
-        <iframe
-          id="editorFrame"
-          src="https://trinket.io/embed/python3"
-          title="Code Editor"
-          frameborder="0"
-          allowfullscreen
-          style="width:100%; height:100%; border:none;"
-        ></iframe>
-      </section>
-    </main>
-  </section>
+      <div class="input-group">
+        <label for="nameInput">Your Name</label>
+        <input id="nameInput" type="text" placeholder="Enter your name" autocomplete="off" />
+      </div>
+
+      <div class="input-group">
+        <label for="roomInput">Room Name</label>
+        <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
+      </div>
+
+      <div class="buttons">
+        <button id="btnTeacher">Start as Teacher</button>
+        <button id="btnStudent">Join as Student</button>
+      </div>
+
+      <p id="status" class="status-text"></p>
+    </section>
+
+    <!-- Teacher View -->
+    <section id="teacherView" class="hidden">
+      <div class="container">
+        <aside id="teacherLeftPane">
+          <h2>Students Attending (<span id="teacherStudentCount">0</span>)</h2>
+          <ul id="studentsList"></ul>
+        </aside>
+
+        <main id="teacherRightPane">
+          <textarea id="teacherNotes" placeholder="Type notes here..."></textarea>
+          <div class="teacherControls">
+            <button id="btnDownloadNotes">Download Notes</button>
+            <button id="btnShareScreen">Share Screen</button>
+            <button id="btnCloseSessionTeacher">Close Session</button>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- Student View -->
+    <section id="studentView" class="hidden">
+      <div class="container studentContainer">
+        <main id="studentLeftPane">
+          <video id="studentVideo" autoplay playsinline></video>
+        </main>
+        <aside id="studentRightPane">
+          <iframe
+            id="editorFrame"
+            src="https://trinket.io/embed/python/3d8d7ce66b"
+            allowfullscreen
+            frameborder="0"
+            ></iframe>
+        </aside>
+      </div>
+      <div class="studentControls">
+        <button id="btnCloseSessionStudent">Close Session</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
