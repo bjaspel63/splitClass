@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,12 +15,12 @@
       </div>
 
       <!-- Display joined info with labels -->
-      <div id="joinedInfo" class="joined-info">
-        <div id="nameContainer" style="display: none;">
+      <div id="joinedInfo" class="joined-info" role="region" aria-live="polite">
+        <div id="nameContainer" class="hidden">
           <label for="displayName" class="label-bold">Your Name:</label>
           <span id="displayName" class="bold-text"></span>
         </div>
-        <div id="roomContainer" style="display: none;">
+        <div id="roomContainer" class="hidden">
           <label for="displayRoom" class="label-bold">Room Name:</label>
           <span id="displayRoom" class="bold-text"></span>
         </div>
@@ -44,31 +42,31 @@
       </div>
 
       <div class="buttons">
-        <button id="btnTeacher">Start as Teacher</button>
-        <button id="btnStudent">Join as Student</button>
+        <button id="btnTeacher" type="button">Start as Teacher</button>
+        <button id="btnStudent" type="button">Join as Student</button>
       </div>
 
-      <p id="status" class="status-text"></p>
+      <p id="status" class="status-text" role="alert" aria-live="assertive"></p>
     </section>
 
     <!-- Main Section (Teacher or Student view) -->
-    <section id="main" class="hidden">
+    <section id="main" class="hidden" role="main" aria-label="Classroom">
       <!-- Left Pane (Teacher: 25% student list, Student: 50% video) -->
       <div id="leftPane">
         <!-- Teacher student list -->
-        <div id="studentsListContainer" class="hidden">
+        <div id="studentsListContainer" class="hidden" aria-label="Students attending">
           <h2>Students Attending (<span id="studentCountDisplay">0</span>)</h2>
-          <ul id="studentsList"></ul>
+          <ul id="studentsList" role="list"></ul>
         </div>
 
         <!-- Student video for student role -->
-        <video id="video" autoplay playsinline muted style="display:none;"></video>
+        <video id="video" autoplay playsinline muted class="hidden"></video>
       </div>
 
       <!-- Right Pane (Teacher notes 75%, Student Trinket iframe 50%) -->
       <div id="rightPane">
         <!-- Teacher notes -->
-        <textarea id="notesArea" placeholder="Type notes here..." class="hidden"></textarea>
+        <textarea id="notesArea" placeholder="Type notes here..." class="hidden" aria-label="Teacher notes"></textarea>
 
         <!-- Trinket iframe for student -->
         <iframe
@@ -77,20 +75,21 @@
           allowfullscreen
           frameborder="0"
           class="hidden"
+          title="Python coding environment"
         ></iframe>
       </div>
     </section>
 
     <!-- Controls for Teacher -->
-    <div id="teacherControls" class="hidden control-panel">
-      <button id="btnDownloadNotes">Download Notes</button>
-      <button id="btnShareScreen">Share Screen</button>
-      <button id="btnCloseSessionTeacher">Close Session</button>
+    <div id="teacherControls" class="hidden control-panel" role="region" aria-label="Teacher controls">
+      <button id="btnDownloadNotes" type="button">Download Notes</button>
+      <button id="btnShareScreen" type="button">Share Screen</button>
+      <button id="btnCloseSessionTeacher" type="button">Close Session</button>
     </div>
 
     <!-- Controls for Student -->
-    <div id="studentControls" class="hidden control-panel">
-      <button id="btnCloseSessionStudent">Close Session</button>
+    <div id="studentControls" class="hidden control-panel" role="region" aria-label="Student controls">
+      <button id="btnCloseSessionStudent" type="button">Close Session</button>
     </div>
   </div>
 
