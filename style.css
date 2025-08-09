@@ -124,6 +124,24 @@ header {
   margin: 0 auto;
 }
 
+/* Layout for teacher: left 25%, right 75% */
+#main.teacher-wide-notes #leftPane {
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+#main.teacher-wide-notes #rightPane {
+  flex: 1 1 75%;
+  max-width: 75%;
+}
+
+/* Layout for student: equal 50%-50% */
+#main.student-equal-sides #leftPane,
+#main.student-equal-sides #rightPane {
+  flex: 1 1 50%;
+  max-width: 50%;
+}
+
 /* Left Pane */
 #leftPane {
   background: #0f172a;
@@ -133,6 +151,8 @@ header {
   position: relative;
   display: flex;
   flex-direction: column;
+  /* Default for student: equal flex 1 */
+  flex: 1;
 }
 
 /* Teacher left pane: attendance only */
@@ -152,10 +172,6 @@ header {
 }
 
 /* Student left pane: full video */
-#leftPane.student-full {
-  flex: 1; /* equal share with right pane */
-}
-
 #leftPane.student-full video {
   width: 100%;
   height: 100%;
@@ -183,8 +199,9 @@ header {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  flex: 1; /* equal share with left pane for student */
   position: relative;
+  /* Default for student: equal flex 1 */
+  flex: 1;
 }
 
 /* Hide Trinket for teacher */
