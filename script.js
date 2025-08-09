@@ -519,6 +519,10 @@ function closeSession() {
   studentsList.innerHTML = "";
   notesArea.value = "";
 
+  // Clear input fields after closing session
+  roomInput.value = "";
+  studentNameInput.value = "";
+
   studentNameInput.classList.remove("hidden");
   studentNameInput.previousElementSibling.classList.remove("hidden");
   roomInput.classList.remove("hidden");
