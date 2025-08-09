@@ -89,41 +89,29 @@ function connectSignaling(room, role, extraPayload = {}) {
         updateUIForRole();
 
         if (isTeacher) {
-          // data.students is an array of existing student IDs
-          // Also, we expect server doesn't send names, so we track student joins later to get names
-          const existing = Array.isArray(data.students) ? data.students : [];
-          existing.forEach(id => {
-            if (!teacherPeers[id]) teacherPeers[id] = { pc: null, name: id };
-          });
+          // data.students is array of {id, name}
+          if (Array.isArray(data.students)) {
+            data.students.forEach(({id, name}) => {
+              if (!teacherPeers[id]) teacherPeers[id] = { pc: null, name: name || id };
+            });
+          }
           updateStudentCount();
           btnShareScreen.disabled = false;
-          status.textContent = `Teacher ready — ${existing.length} waiting`;
+          status.textContent = `Teacher ready — ${Object.keys(teacherPeers).length} waiting`;
         } else {
           if (data.id) {
             studentId = data.id;
-            status.textContent = `Student ready (id: ${studentId})`;
+            studentName = data.name || extraPayload.name || "Anonymous";
+            status.textContent = `Student ready: ${studentName} (id: ${studentId})`;
           }
         }
         break;
 
       case "student-joined":
         if (isTeacher && data.id) {
-          // If server sends name in future, adjust here.
-          // For now, receive 'student-joined' with id only. To get names, you might extend server.
-          // But we passed name on join, so just assign it now:
           teacherPeers[data.id] = teacherPeers[data.id] || { pc: null, name: data.name || data.id };
           updateStudentCount();
-          status.textContent = `Student joined: ${data.id}`;
-          if (isSharing) offerToStudent(data.id);
-        }
-        break;
-
-      // Custom: extended student-joined with name if server sends
-      case "student-joined-with-name":
-        if (isTeacher && data.id) {
-          teacherPeers[data.id] = teacherPeers[data.id] || { pc: null, name: data.name || data.id };
-          updateStudentCount();
-          status.textContent = `Student joined: ${data.name} (${data.id})`;
+          status.textContent = `Student joined: ${data.name || data.id}`;
           if (isSharing) offerToStudent(data.id);
         }
         break;
@@ -399,7 +387,7 @@ btnTeacher.onclick = () => {
 
 btnStudent.onclick = () => {
   const roomVal = roomInput.value.trim();
-  const nameVal = document.getElementById('nameInput').value.trim();
+  const nameVal = studentNameInput.value.trim();
 
   if (!nameVal) {
     alert("Please enter your name.");
@@ -417,7 +405,6 @@ btnStudent.onclick = () => {
 
   connectSignaling(roomName, "student", { name: nameVal }); // pass name to join payload
 };
-
 
 btnShareScreen.onclick = () => {
   if (!isSharing) startSharing();
