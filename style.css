@@ -1,3 +1,8 @@
+/* Reset */
+* {
+  box-sizing: border-box;
+}
+
 html, body {
   margin: 0;
   height: 100%;
@@ -14,94 +19,172 @@ html, body {
   max-width: 100vw;
 }
 
+/* Header */
+
 header {
-  padding: 1rem;
-  text-align: center;
-  background-color: #0f172a;
-  border-bottom: 1px solid #334155;
-}
-
-#setup {
-  padding: 1rem;
-  text-align: center;
-  background-color: #0f172a;
-  border-bottom: 1px solid #334155;
-}
-
-#setup input {
-  width: 250px;
-  padding: 0.5rem;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: none;
-  margin-left: 0.5rem;
-}
-
-#setup button {
-  margin: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  border: none;
-  border-radius: 8px;
-  background: #3b82f6;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-#setup button:hover {
+.header-left h1 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #3b82f6;
+}
+
+.header-right button {
+  margin-left: 1rem;
+  background: #3b82f6;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  user-select: none;
+}
+
+.header-right button:disabled {
+  background: #64748b;
+  cursor: not-allowed;
+}
+
+.header-right button:hover:not(:disabled) {
   background: #2563eb;
 }
 
-#status {
-  margin-top: 0.5rem;
+/* Setup Section */
+
+#setup {
+  padding: 1rem 1.5rem;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#setup label {
   font-weight: 600;
 }
 
-.hidden {
-  display: none !important;
+#roomInput {
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: none;
+  width: 250px;
+  max-width: 100%;
 }
+
+#status {
+  font-weight: 600;
+  color: #f97316;
+  margin: 0;
+}
+
+/* Main content split */
 
 #main {
   flex: 1;
   display: flex;
-  height: calc(100vh - 140px); /* subtract header + setup height approx */
+  height: calc(100vh - 140px); /* header + setup + footer approx */
 }
 
 #leftPane, #rightPane {
   width: 50vw;
   height: 100%;
-  border-radius: 10px;
   background: #0f172a;
+  border-radius: 10px;
+  margin: 0.75rem;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  margin: 0;
+  box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
 }
+
+/* Video styles */
 
 #leftPane video {
   width: 100%;
   height: 100%;
   object-fit: contain;
   background: black;
+  border-radius: 10px;
 }
 
 #teacherDisconnected {
   position: absolute;
-  inset: 0;
-  margin: auto;
-  color: #ef4444;
-  font-size: 1.4rem;
-  text-align: center;
   top: 50%;
-  transform: translateY(-50%);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 1.3rem;
+  text-align: center;
+  display: none;
 }
 
+#teacherDisconnected.visible {
+  display: block;
+}
+
+/* Editor iframe */
+
 #rightPane iframe {
-  border: none;
   width: 100%;
   height: 100%;
+  border: none;
   border-radius: 10px;
-  flex: 1;
+}
+
+/* Footer */
+
+footer {
+  text-align: center;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  background: #0f172a;
+  border-top: 1px solid #334155;
+  color: #94a3b8;
+  user-select: none;
+}
+
+/* Fullscreen mode for sharing screen */
+
+#leftPane.fullscreen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  border-radius: 0;
+  z-index: 9999;
+  background: black;
+  box-shadow: none;
+}
+
+#leftPane.fullscreen video {
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+}
+
+#main.fullscreen #rightPane,
+#main.fullscreen header,
+#main.fullscreen #setup,
+#main.fullscreen footer {
+  display: none;
+}
+
+.hidden {
+  display: none !important;
 }
