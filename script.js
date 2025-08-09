@@ -115,12 +115,12 @@ function showJoinedInfo() {
   if (isTeacher) {
     nameContainer.classList.add("hidden");
     roomContainer.classList.remove("hidden");
-    displayRoom.textContent = roomName;
+    displayRoom.textContent = roomName || '';
   } else {
     nameContainer.classList.remove("hidden");
     displayName.textContent = studentName;
     roomContainer.classList.remove("hidden");
-    displayRoom.textContent = roomName;
+    displayRoom.textContent = roomName || '';
   }
 }
 
