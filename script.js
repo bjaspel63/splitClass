@@ -1,4 +1,4 @@
-const signalingUrl = "wss://YOUR_SIGNALING_SERVER_URL"; // Replace with your deployed signaling server WebSocket URL
+const signalingUrl = "wss://splitclass-production.up.railway.app"; // Replace with your deployed signaling server WebSocket URL
 
 const video = document.getElementById("video");
 const roomInput = document.getElementById("roomInput");
