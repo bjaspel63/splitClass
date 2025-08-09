@@ -45,21 +45,20 @@ const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
 function updateStudentCount() {
   if (!isTeacher) return;
-  const studentIds = Object.keys(teacherPeers);
-  const count = studentIds.length;
+  const count = Object.keys(teacherPeers).length;
+  console.log("Updating student count:", count, teacherPeers);
   studentCountDisplay.textContent = count;
 
-  studentsList.innerHTML = ""; // Clear old list
-
-  studentsListContainer.style.display = "block";
-
+  studentsList.innerHTML = "";
   if (count > 0) {
-    studentIds.forEach((id) => {
+    studentsListContainer.style.display = "flex"; // use flex here
+    for (const info of Object.values(teacherPeers)) {
       const li = document.createElement("li");
-      li.textContent = teacherPeers[id].name || "Anonymous";
+      li.textContent = info.name || "Anonymous";
       studentsList.appendChild(li);
-    });
+    }
   } else {
+    studentsListContainer.style.display = "flex"; // ensure visible
     const li = document.createElement("li");
     li.innerHTML = "<em>No students yet</em>";
     studentsList.appendChild(li);
@@ -70,7 +69,7 @@ function updateUIForRole() {
   if (isTeacher) {
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
-    studentsListContainer.style.display = "block";
+    studentsListContainer.style.display = "flex"; // force visible on teacher
     video.style.display = "none";
 
     notesArea.classList.remove("hidden");
