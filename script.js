@@ -17,10 +17,9 @@ const studentsList = document.getElementById("studentsList");
 const studentCountDisplay = document.getElementById("studentCountDisplay");
 const notesArea = document.getElementById("notesArea");
 const editorFrame = document.getElementById("editorFrame");
-
 const studentNameInput = document.getElementById("studentNameInput");
 
-// New elements for showing joined info in setup
+// Elements to display joined info in setup section
 const displayName = document.getElementById("displayName");
 const displayRoom = document.getElementById("displayRoom");
 
@@ -62,7 +61,7 @@ function updateStudentCount() {
 
 function updateUIForRole() {
   if (isTeacher) {
-    // Teacher: left pane 25%, right pane 75% notes visible
+    // Teacher: left pane 25%, right pane 75%, notes visible
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
     studentsListContainer.style.display = "block";
@@ -79,8 +78,8 @@ function updateUIForRole() {
     btnCloseSession.style.display = "inline-block";
 
     // Adjust main section layout for teacher (25% left, 75% right)
-    mainSection.classList.remove("student-equal-sides");
     mainSection.classList.add("teacher-wide-notes");
+    mainSection.classList.remove("student-equal-sides");
 
   } else {
     // Student: left pane and right pane equal width (50%-50%)
@@ -169,7 +168,6 @@ function connectSignaling(room, role, extraPayload = {}) {
         mainSection.classList.remove("hidden");
 
         showJoinedInfo();
-
         updateUIForRole();
 
         if (isTeacher) {
@@ -418,7 +416,9 @@ function closeSession() {
   status.textContent = "Session closed.";
   setupSection.classList.remove("hidden");
   mainSection.classList.add("hidden");
+
   leftPane.classList.remove("teacher-no-video", "student-full");
+  mainSection.classList.remove("teacher-wide-notes", "student-equal-sides");
   document.getElementById("rightPane").style.display = "flex";
 
   btnShareScreen.style.display = "none";
@@ -436,7 +436,7 @@ function closeSession() {
   studentCountDisplay.textContent = "0";
 
   notesArea.value = "";
-  
+
   // Reset display info and show inputs + labels again
   displayName.style.display = "none";
   displayRoom.style.display = "none";
