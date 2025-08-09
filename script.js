@@ -532,6 +532,7 @@ function closeSession() {
 /* --- Event listeners --- */
 
 btnTeacher.addEventListener("click", () => {
+  status.textContent = "";
   roomName = roomInput.value.trim();
   const nameVal = studentNameInput.value.trim() || "Teacher";
   if (!roomName) {
@@ -543,6 +544,7 @@ btnTeacher.addEventListener("click", () => {
 });
 
 btnStudent.addEventListener("click", () => {
+  status.textContent = "";
   roomName = roomInput.value.trim();
   const nameVal = studentNameInput.value.trim();
   if (!roomName) {
