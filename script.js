@@ -496,7 +496,7 @@ function closeSession() {
   if (roomNameDisplay) {
     roomNameDisplay.textContent = ""; // clear text
     roomNameDisplay.style.display = "none"; // optionally hide
-
+		}
   status.textContent = "Session closed.";
 
   // Reset UI
