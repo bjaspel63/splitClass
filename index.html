@@ -10,19 +10,19 @@
   <div id="app">
     <!-- Header (common) -->
     <header>
-      <div id="appTitle" style="font-weight: bold; font-size: 1.5rem; user-select:none;">
+      <div id="appTitle" class="app-title">
         SplitClass + Trinket
       </div>
 
       <!-- Display joined info with labels -->
-      <div id="joinedInfo" style="margin-top: 6px; display: flex; gap: 1.5rem; justify-content: center; align-items: center;">
+      <div id="joinedInfo" class="joined-info">
         <div id="nameContainer" style="display: none;">
-          <label for="displayName" style="font-weight: 600;">Your Name:</label>
-          <span id="displayName" style="font-weight: bold; margin-left: 4px;"></span>
+          <label for="displayName" class="label-bold">Your Name:</label>
+          <span id="displayName" class="bold-text"></span>
         </div>
         <div id="roomContainer" style="display: none;">
-          <label for="displayRoom" style="font-weight: 600;">Room Name:</label>
-          <span id="displayRoom" style="font-weight: bold; margin-left: 4px;"></span>
+          <label for="displayRoom" class="label-bold">Room Name:</label>
+          <span id="displayRoom" class="bold-text"></span>
         </div>
       </div>
     </header>
@@ -80,15 +80,15 @@
     </section>
 
     <!-- Controls for Teacher -->
-    <div id="teacherControls" class="hidden" style="margin-top: 10px; display: flex; gap: 10px;">
+    <div id="teacherControls" class="hidden control-panel">
       <button id="btnDownloadNotes">Download Notes</button>
       <button id="btnShareScreen">Share Screen</button>
-      <button id="btnCloseSessionTeacher">Close Session</button>
+      <button id="btnCloseSession">Close Session</button>
     </div>
 
     <!-- Controls for Student -->
-    <div id="studentControls" class="hidden" style="margin-top: 10px;">
-      <button id="btnCloseSessionStudent">Close Session</button>
+    <div id="studentControls" class="hidden control-panel">
+      <button id="btnCloseSession">Close Session</button>
     </div>
   </div>
 
