@@ -137,6 +137,7 @@ header {
   gap: 1rem;
   padding: 1rem 2rem;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 /* Left Pane */
@@ -252,7 +253,7 @@ header {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, height 0.3s ease;
 }
 
 /* Hide controls by default */
