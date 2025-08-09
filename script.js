@@ -1,14 +1,17 @@
-const signalingUrl = "wss://splitclass-production.up.railway.app"; 
+const signalingUrl = "wss://splitclass-production.up.railway.app";
 
 const video = document.getElementById("video");
 const roomInput = document.getElementById("roomInput");
 const btnTeacher = document.getElementById("btnTeacher");
 const btnStudent = document.getElementById("btnStudent");
 const btnShareScreen = document.getElementById("btnShareScreen");
+const btnCloseSession = document.getElementById("btnCloseSession");
 const status = document.getElementById("status");
 const setupSection = document.getElementById("setup");
 const mainSection = document.getElementById("main");
 const teacherDisconnected = document.getElementById("teacherDisconnected");
+const leftPane = document.getElementById("leftPane");
+const rightPane = document.getElementById("rightPane");
 
 let ws;
 let pc;
@@ -21,14 +24,12 @@ const rtcConfig = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-// Send JSON message via WebSocket
 function sendSignal(msg) {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(msg));
   }
 }
 
-// Connect signaling server & handle messages
 function connectSignaling(room, role) {
   ws = new WebSocket(signalingUrl);
 
@@ -41,7 +42,7 @@ function connectSignaling(room, role) {
     let data;
     try {
       data = JSON.parse(msg.data);
-    } catch (e) {
+    } catch {
       return;
     }
 
@@ -83,7 +84,6 @@ function connectSignaling(room, role) {
   };
 }
 
-// Teacher: create offer and send to all students
 async function createOfferToStudents() {
   if (!pc) return;
   const offer = await pc.createOffer();
@@ -91,7 +91,6 @@ async function createOfferToStudents() {
   sendSignal({ type: "offer", room: roomName, payload: offer });
 }
 
-// Student: receive offer, set remote desc, create answer
 async function handleOffer(offer) {
   pc = new RTCPeerConnection(rtcConfig);
 
@@ -115,14 +114,12 @@ async function handleOffer(offer) {
   sendSignal({ type: "answer", room: roomName, payload: answer });
 }
 
-// Teacher: receive answer from student and set remote desc
 async function handleAnswer(answer) {
   if (!pc) return;
   await pc.setRemoteDescription(new RTCSessionDescription(answer));
 }
 
 async function startSharing() {
-  // Close old connection and stop old stream if exist
   if (pc) {
     pc.close();
     pc = null;
@@ -154,7 +151,8 @@ async function startSharing() {
     btnShareScreen.textContent = "Stop Sharing";
     isSharing = true;
 
-    document.getElementById("leftPane").classList.add("fullscreen");
+    leftPane.classList.add("fullscreen");
+    mainSection.classList.add("fullscreen");
 
     screenStream.getVideoTracks()[0].addEventListener("ended", () => {
       stopSharing();
@@ -173,8 +171,8 @@ function stopSharing() {
     screenStream = null;
   }
 
-  const leftPane = document.getElementById("leftPane");
   leftPane.classList.remove("fullscreen");
+  mainSection.classList.remove("fullscreen");
 
   video.srcObject = null;
 
@@ -187,18 +185,55 @@ function stopSharing() {
   isSharing = false;
 }
 
-// Update UI buttons visibility based on role
 function updateUIForRole() {
   if (isTeacher) {
+    // Teacher: Hide join and start buttons, show share and close
     btnStudent.style.display = "none";
-    btnTeacher.style.display = "inline-block";
+    btnTeacher.style.display = "none";
     btnShareScreen.style.display = "inline-block";
     btnShareScreen.disabled = false;
+    btnCloseSession.style.display = "inline-block";
   } else {
-    btnStudent.style.display = "inline-block";
+    // Student: Hide start, join, share; show close only
+    btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
     btnShareScreen.style.display = "none";
+    btnCloseSession.style.display = "inline-block";
   }
+}
+
+function resetToSetup() {
+  // Close streams & connections
+  stopSharing();
+  if (pc) {
+    pc.close();
+    pc = null;
+  }
+  if (ws) {
+    ws.close();
+    ws = null;
+  }
+  roomName = "";
+  isTeacher = false;
+  screenStream = null;
+  isSharing = false;
+
+  video.srcObject = null;
+  teacherDisconnected.classList.add("hidden");
+  teacherDisconnected.classList.remove("visible");
+
+  setupSection.classList.remove("hidden");
+  mainSection.classList.add("hidden");
+  leftPane.classList.remove("fullscreen");
+  mainSection.classList.remove("fullscreen");
+
+  status.textContent = "";
+
+  btnTeacher.style.display = "inline-block";
+  btnStudent.style.display = "inline-block";
+  btnShareScreen.style.display = "none";
+  btnCloseSession.style.display = "none";
+  btnShareScreen.disabled = true;
 }
 
 btnTeacher.onclick = () => {
@@ -231,4 +266,8 @@ btnShareScreen.onclick = () => {
   } else {
     stopSharing();
   }
+};
+
+btnCloseSession.onclick = () => {
+  resetToSetup();
 };
