@@ -399,16 +399,25 @@ btnTeacher.onclick = () => {
 
 btnStudent.onclick = () => {
   const roomVal = roomInput.value.trim();
-  const nameVal = studentNameInput.value.trim();
-  if (!roomVal) { alert("Please enter a room name."); return; }
-  if (!nameVal) { alert("Please enter your name."); return; }
+  const nameVal = document.getElementById('nameInput').value.trim();
+
+  if (!nameVal) {
+    alert("Please enter your name.");
+    return;
+  }
+
+  if (!roomVal) {
+    alert("Please enter a room name.");
+    return;
+  }
 
   roomName = roomVal;
-  studentName = nameVal;
   isTeacher = false;
   updateUIForRole();
-  connectSignaling(roomName, "student", studentName);
+
+  connectSignaling(roomName, "student", { name: nameVal }); // pass name to join payload
 };
+
 
 btnShareScreen.onclick = () => {
   if (!isSharing) startSharing();
