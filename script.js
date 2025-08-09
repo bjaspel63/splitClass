@@ -82,7 +82,17 @@ function updateUIForRole() {
     studentsListContainer.classList.remove("hidden");
     video.classList.add("hidden");
 
-    notesArea.classList.remove("hidden");
+    // Show PDF viewer if PDF loaded, else show notes
+    if (pdfViewer.src && pdfViewer.src.trim() !== "") {
+      notesArea.classList.add("hidden");
+      pdfViewerContainer.classList.remove("hidden");
+      btnClearPdf.style.display = "inline-block";
+    } else {
+      notesArea.classList.remove("hidden");
+      pdfViewerContainer.classList.add("hidden");
+      btnClearPdf.style.display = "none";
+    }
+
     editorFrame.classList.add("hidden");
 
     document.getElementById("rightPane").style.display = "flex";
@@ -93,15 +103,8 @@ function updateUIForRole() {
     mainSection.classList.remove("student-role");
     mainSection.classList.add("teacher-role");
 
-    // Show PDF upload & viewer for teacher
+    // Show PDF upload button for teacher
     if (pdfUploadInput) pdfUploadInput.style.display = "inline-block";
-    if (pdfViewer.src) {
-      pdfViewerContainer.classList.remove("hidden");
-      btnClearPdf.style.display = "inline-block";
-    } else {
-      pdfViewerContainer.classList.add("hidden");
-      btnClearPdf.style.display = "none";
-    }
 
   } else {
     leftPane.classList.remove("teacher-no-video");
@@ -113,6 +116,11 @@ function updateUIForRole() {
     notesArea.classList.add("hidden");
     editorFrame.classList.remove("hidden");
 
+    // Hide PDF viewer & upload for students
+    pdfViewerContainer.classList.add("hidden");
+    btnClearPdf.style.display = "none";
+    if (pdfUploadInput) pdfUploadInput.style.display = "none";
+
     document.getElementById("rightPane").style.display = "flex";
 
     teacherControls.classList.add("hidden");
@@ -120,11 +128,6 @@ function updateUIForRole() {
 
     mainSection.classList.remove("teacher-role");
     mainSection.classList.add("student-role");
-
-    // Hide PDF upload & viewer for student
-    if (pdfUploadInput) pdfUploadInput.style.display = "none";
-    pdfViewerContainer.classList.add("hidden");
-    btnClearPdf.style.display = "none";
   }
 }
 
@@ -654,8 +657,12 @@ if (pdfUploadInput && pdfViewer && pdfViewerContainer && btnClearPdf) {
     if (file && file.type === "application/pdf") {
       const fileURL = URL.createObjectURL(file);
       pdfViewer.src = fileURL;
+
+      // Show PDF viewer and hide notes area
       pdfViewerContainer.classList.remove("hidden");
       btnClearPdf.style.display = "inline-block";
+      notesArea.classList.add("hidden");
+
     } else {
       alert("Please upload a valid PDF file.");
       pdfUploadInput.value = ""; // reset input
@@ -666,6 +673,10 @@ if (pdfUploadInput && pdfViewer && pdfViewerContainer && btnClearPdf) {
     pdfViewer.src = "";
     pdfViewerContainer.classList.add("hidden");
     btnClearPdf.style.display = "none";
+
+    // Show notes area back after clearing PDF
+    notesArea.classList.remove("hidden");
+
     pdfUploadInput.value = "";
   });
 }
@@ -678,7 +689,8 @@ document.addEventListener("DOMContentLoaded", () => {
   teacherControls.classList.add("hidden");
   studentControls.classList.add("hidden");
   studentsListContainer.classList.add("hidden");
-  notesArea.classList.add("hidden");
+
+  notesArea.classList.remove("hidden"); // Show notes by default on init
   editorFrame.classList.remove("hidden");
   nameContainer.classList.add("hidden");
   roomContainer.classList.add("hidden");
