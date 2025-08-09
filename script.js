@@ -543,10 +543,17 @@ btnTeacher.addEventListener("click", () => {
   status.textContent = "";
   roomName = roomInput.value.trim();
   const nameVal = studentNameInput.value.trim() || "Teacher";
+
+  const display = document.getElementById("roomNameDisplay");
+
   if (!roomName) {
     status.textContent = "Please enter a room name.";
+    display.textContent = "";
     return;
   }
+
+  display.textContent = "Room: " + roomName;
+
   isTeacher = true;
   connectSignaling(roomName, "teacher", { name: nameVal });
 });
@@ -555,14 +562,22 @@ btnStudent.addEventListener("click", () => {
   status.textContent = "";
   roomName = roomInput.value.trim();
   const nameVal = studentNameInput.value.trim();
+
+  const display = document.getElementById("roomNameDisplay");
+
   if (!roomName) {
     status.textContent = "Please enter a room name.";
+    display.textContent = "";
     return;
   }
   if (!nameVal) {
     status.textContent = "Please enter your name.";
+    display.textContent = "";
     return;
   }
+
+  display.textContent = "Room: " + roomName;
+
   isTeacher = false;
   connectSignaling(roomName, "student", { name: nameVal });
 });
