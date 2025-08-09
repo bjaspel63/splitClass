@@ -1,4 +1,3 @@
-/* Reset */
 * {
   box-sizing: border-box;
 }
@@ -10,18 +9,15 @@ html, body {
   font-family: system-ui, sans-serif;
   color: #f1f5f9;
   overflow: hidden;
-  overflow-x: hidden; /* prevent horizontal scroll */
 }
 
 #app {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  max-width: 100vw;
 }
 
 /* Header */
-
 header {
   display: flex;
   justify-content: space-between;
@@ -30,7 +26,6 @@ header {
   background: #0f172a;
   border-bottom: 1px solid #334155;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  user-select: none;
 }
 
 .header-left h1 {
@@ -50,7 +45,6 @@ header {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.25s ease;
-  user-select: none;
 }
 
 .header-right button:disabled {
@@ -62,8 +56,7 @@ header {
   background: #2563eb;
 }
 
-/* Setup Section */
-
+/* Setup */
 #setup {
   padding: 1rem 1.5rem;
   background: #0f172a;
@@ -83,7 +76,6 @@ header {
   border-radius: 6px;
   border: none;
   width: 250px;
-  max-width: 100%;
 }
 
 #status {
@@ -92,38 +84,30 @@ header {
   margin: 0;
 }
 
-/* Main content split */
-
+/* Main split view */
 #main {
   flex: 1;
   display: flex;
-  height: calc(100vh - 140px); /* header + setup + footer approx */
+  height: calc(100vh - 140px);
 }
 
 #leftPane, #rightPane {
-  width: 50vw;
-  height: 100%;
+  flex: 1;
   background: #0f172a;
-  border-radius: 10px;
   margin: 0.75rem;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
   box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
-  flex-shrink: 0; /* prevent shrinking */
-  padding: 0;
 }
-
-/* Video styles */
 
 #leftPane video {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover; /* no black bars */
   background: black;
-  border-radius: 10px;
-  display: block;
 }
 
 #teacherDisconnected {
@@ -135,24 +119,15 @@ header {
   font-weight: 700;
   font-size: 1.3rem;
   text-align: center;
-  display: none;
 }
-
-#teacherDisconnected.visible {
-  display: block;
-}
-
-/* Editor iframe */
 
 #rightPane iframe {
   width: 100%;
   height: 100%;
   border: none;
-  border-radius: 10px;
 }
 
 /* Footer */
-
 footer {
   text-align: center;
   padding: 0.75rem;
@@ -160,41 +135,31 @@ footer {
   background: #0f172a;
   border-top: 1px solid #334155;
   color: #94a3b8;
-  user-select: none;
 }
 
-/* Fullscreen mode for sharing screen */
-
+/* Fullscreen left pane */
 #leftPane.fullscreen {
   position: fixed;
-  top: 0; 
+  top: 0;
   left: 0;
   width: 100vw !important;
   height: 100vh !important;
   margin: 0 !important;
-  padding: 0 !important;
   border-radius: 0 !important;
   z-index: 9999;
-  background: black;
-  box-shadow: none;
 }
 
 #leftPane.fullscreen video {
-  width: 100vw !important;
-  height: 100vh !important;
-  object-fit: contain; /* Use contain to avoid cropping */
-  border-radius: 0 !important;
+  object-fit: cover;
 }
 
-/* Hide other UI elements when fullscreen */
+/* Hide other UI in fullscreen */
 #main.fullscreen #rightPane,
-#main.fullscreen header,
-#main.fullscreen #setup,
-#main.fullscreen footer {
+#main.fullscreen + header,
+#main.fullscreen + #setup,
+#main.fullscreen + footer {
   display: none;
 }
-
-/* Utility */
 
 .hidden {
   display: none !important;
