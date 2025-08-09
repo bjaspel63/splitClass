@@ -10,7 +10,8 @@
   <div id="app">
     <!-- Header (common) -->
     <header>
-      <!-- Removed appTitle here as requested -->
+      <!-- Room name display below input -->
+      <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: #333;"></div>
 
       <!-- Display joined info with labels -->
       <div id="joinedInfo" class="joined-info" role="region" aria-live="polite">
@@ -51,8 +52,7 @@
     <!-- Main Section (Teacher or Student view) -->
     <section id="main" class="hidden" role="main" aria-label="Classroom">
       <!-- Left Pane (Teacher: 25% student list, Student: 50% video) -->
-      <!-- Room name display below input -->
-      <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: #333;"></div>
+      
       <div id="leftPane">
         <!-- Teacher student list -->
         <div id="studentsListContainer" class="hidden" aria-label="Students attending">
