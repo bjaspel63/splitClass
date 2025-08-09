@@ -5,8 +5,7 @@ const roomInput = document.getElementById("roomInput");
 const btnTeacher = document.getElementById("btnTeacher");
 const btnStudent = document.getElementById("btnStudent");
 const btnShareScreen = document.getElementById("btnShareScreen");
-const btnCloseSessionTeacher = document.getElementById("btnCloseSession"); // shared ID for both roles, handle carefully
-const btnCloseSessionStudent = document.getElementById("btnCloseSession"); // same button for both; adjust usage if needed
+const btnCloseSession = document.getElementById("btnCloseSession"); // one shared button
 const status = document.getElementById("status");
 const setupSection = document.getElementById("setup");
 const mainSection = document.getElementById("main");
@@ -54,8 +53,8 @@ function updateStudentCount() {
       studentsList.appendChild(li);
     }
   } else {
-    studentsListContainer.style.display = "none";
-    studentsList.innerHTML = "";
+    studentsListContainer.style.display = "block"; // show empty list container even if no students
+    studentsList.innerHTML = "<li><em>No students yet</em></li>";
   }
 }
 
@@ -74,6 +73,10 @@ function updateUIForRole() {
     teacherControls.classList.remove("hidden");
     studentControls.classList.add("hidden");
 
+    // Layout widths
+    mainSection.classList.remove("student-role");
+    mainSection.classList.add("teacher-role");
+
   } else {
     leftPane.classList.remove("teacher-no-video");
     leftPane.classList.add("student-full");
@@ -87,6 +90,10 @@ function updateUIForRole() {
 
     teacherControls.classList.add("hidden");
     studentControls.classList.remove("hidden");
+
+    // Layout widths
+    mainSection.classList.remove("teacher-role");
+    mainSection.classList.add("student-role");
   }
 }
 
@@ -103,14 +110,35 @@ function showJoinedInfo() {
 
   if (isTeacher) {
     displayName.style.display = "none";
+    displayName.previousElementSibling?.style.display = "none";
     displayRoom.textContent = roomName;
     displayRoom.style.display = "block";
+    displayRoom.previousElementSibling?.style.display = "inline-block";
   } else {
     displayName.textContent = studentName;
     displayName.style.display = "block";
+    displayName.previousElementSibling?.style.display = "inline-block";
     displayRoom.textContent = roomName;
     displayRoom.style.display = "block";
+    displayRoom.previousElementSibling?.style.display = "inline-block";
   }
+}
+
+/* --- Download Notes --- */
+function downloadNotes() {
+  if (!notesArea.value.trim()) {
+    alert("No notes to download.");
+    return;
+  }
+  const blob = new Blob([notesArea.value], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `notes_${roomName || "session"}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 /* --- Signaling & WebRTC --- */
@@ -406,8 +434,11 @@ function closeSession() {
   }
 
   status.textContent = "Session closed.";
+
+  // Reset UI
   setupSection.classList.remove("hidden");
   mainSection.classList.add("hidden");
+
   leftPane.classList.remove("teacher-no-video", "student-full");
   document.getElementById("rightPane").style.display = "flex";
 
@@ -430,12 +461,17 @@ function closeSession() {
   notesArea.value = "";
 
   displayName.style.display = "none";
+  displayName.previousElementSibling?.style.display = "none";
   displayRoom.style.display = "none";
+  displayRoom.previousElementSibling?.style.display = "none";
 
   studentNameInput.style.display = "block";
   studentNameInput.previousElementSibling.style.display = "block";
   roomInput.style.display = "block";
   roomInput.previousElementSibling.style.display = "block";
+
+  btnTeacher.style.display = "inline-block";
+  btnStudent.style.display = "inline-block";
 }
 
 /* --- Event listeners --- */
@@ -470,13 +506,15 @@ btnShareScreen.addEventListener("click", () => {
   startScreenShare();
 });
 
-btnCloseSessionTeacher.addEventListener("click", () => {
+btnCloseSession.addEventListener("click", () => {
   closeSession();
 });
 
-btnCloseSessionStudent.addEventListener("click", () => {
-  closeSession();
-});
+/* --- Download notes event --- */
+const btnDownloadNotes = document.getElementById("btnDownloadNotes");
+if (btnDownloadNotes) {
+  btnDownloadNotes.addEventListener("click", downloadNotes);
+}
 
 /* --- Init --- */
 
@@ -490,4 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
   editorFrame.classList.remove("hidden");
   displayName.style.display = "none";
   displayRoom.style.display = "none";
+
+  btnTeacher.style.display = "inline-block";
+  btnStudent.style.display = "inline-block";
 });
