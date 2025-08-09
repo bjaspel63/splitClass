@@ -9,7 +9,6 @@ wss.on('connection', (ws) => {
   ws.id = null;
   ws.role = null;
   ws.room = null;
-  ws.name = null;
 
   ws.on('message', (msg) => {
     let data;
@@ -18,7 +17,6 @@ wss.on('connection', (ws) => {
 
     if (!room) return;
 
-    // Initialize room if not exist
     if (!rooms[room]) {
       rooms[room] = {
         teacher: null,
@@ -36,34 +34,33 @@ wss.on('connection', (ws) => {
           ws.role = 'teacher';
           ws.room = room;
           ws.id = 'teacher';
-          ws.name = null;
 
-          // Send back joined + existing student IDs + names
+          // Send back joined + existing students with id and name
+          const studentsList = Array.from(currentRoom.students.entries()).map(([id, student]) => ({
+            id,
+            name: student.name
+          }));
+
           ws.send(JSON.stringify({
             type: 'joined',
             role: 'teacher',
-            students: Array.from(currentRoom.students.entries()).map(([id, obj]) => ({ id, name: obj.name }))
+            students: studentsList
           }));
         } else if (payload.role === 'student') {
-          if (!payload.name || typeof payload.name !== 'string' || !payload.name.trim()) {
-            // Reject join if no valid name
-            ws.send(JSON.stringify({ type: 'error', message: 'Student name required' }));
-            return;
-          }
-          // Assign unique student ID
           const studentId = `student${currentRoom.nextStudentId++}`;
           ws.role = 'student';
           ws.room = room;
           ws.id = studentId;
-          ws.name = payload.name.trim();
 
-          currentRoom.students.set(studentId, { ws, name: ws.name });
+          // Save student with name (from payload.name)
+          const studentName = payload.name || "Anonymous";
+          currentRoom.students.set(studentId, { ws, name: studentName });
 
-          // Send joined message with ID
           ws.send(JSON.stringify({
             type: 'joined',
             role: 'student',
-            id: studentId
+            id: studentId,
+            name: studentName
           }));
 
           // Notify teacher about new student with name
@@ -71,7 +68,7 @@ wss.on('connection', (ws) => {
             currentRoom.teacher.send(JSON.stringify({
               type: 'student-joined',
               id: studentId,
-              name: ws.name
+              name: studentName
             }));
           }
         }
@@ -79,9 +76,9 @@ wss.on('connection', (ws) => {
 
       case 'offer':
         if (ws.role === 'teacher' && to && currentRoom.students.has(to)) {
-          const studentWs = currentRoom.students.get(to).ws;
-          if (studentWs.readyState === WebSocket.OPEN) {
-            studentWs.send(JSON.stringify({
+          const student = currentRoom.students.get(to);
+          if (student.ws.readyState === WebSocket.OPEN) {
+            student.ws.send(JSON.stringify({
               type: 'offer',
               payload,
               from: 'teacher'
@@ -102,9 +99,9 @@ wss.on('connection', (ws) => {
 
       case 'candidate':
         if (ws.role === 'teacher' && to && currentRoom.students.has(to)) {
-          const studentWs = currentRoom.students.get(to).ws;
-          if (studentWs.readyState === WebSocket.OPEN) {
-            studentWs.send(JSON.stringify({
+          const student = currentRoom.students.get(to);
+          if (student.ws.readyState === WebSocket.OPEN) {
+            student.ws.send(JSON.stringify({
               type: 'candidate',
               payload,
               from: 'teacher'
@@ -120,7 +117,6 @@ wss.on('connection', (ws) => {
         break;
 
       case 'leave':
-        // Student or teacher leave handling
         if (ws.role === 'student') {
           if (currentRoom.students.has(ws.id)) {
             currentRoom.students.delete(ws.id);
@@ -134,23 +130,19 @@ wss.on('connection', (ws) => {
           ws.room = null;
           ws.id = null;
           ws.role = null;
-          ws.name = null;
         } else if (ws.role === 'teacher') {
-          // Notify all students teacher left
-          currentRoom.students.forEach(({ ws: studentWs }) => {
-            if (studentWs.readyState === WebSocket.OPEN) {
-              studentWs.send(JSON.stringify({ type: 'teacher-left' }));
-              studentWs.room = null;
-              studentWs.id = null;
-              studentWs.role = null;
-              studentWs.name = null;
+          currentRoom.students.forEach(student => {
+            if (student.ws.readyState === WebSocket.OPEN) {
+              student.ws.send(JSON.stringify({ type: 'teacher-left' }));
+              student.ws.room = null;
+              student.ws.id = null;
+              student.ws.role = null;
             }
           });
           delete rooms[room];
           ws.room = null;
           ws.id = null;
           ws.role = null;
-          ws.name = null;
         }
         break;
     }
@@ -161,14 +153,12 @@ wss.on('connection', (ws) => {
     const currentRoom = rooms[ws.room];
 
     if (ws.role === 'teacher') {
-      // Notify all students teacher left
-      currentRoom.students.forEach(({ ws: studentWs }) => {
-        if (studentWs.readyState === WebSocket.OPEN) {
-          studentWs.send(JSON.stringify({ type: 'teacher-left' }));
-          studentWs.room = null;
-          studentWs.id = null;
-          studentWs.role = null;
-          studentWs.name = null;
+      currentRoom.students.forEach(student => {
+        if (student.ws.readyState === WebSocket.OPEN) {
+          student.ws.send(JSON.stringify({ type: 'teacher-left' }));
+          student.ws.room = null;
+          student.ws.id = null;
+          student.ws.role = null;
         }
       });
       delete rooms[ws.room];
@@ -187,7 +177,6 @@ wss.on('connection', (ws) => {
     ws.room = null;
     ws.id = null;
     ws.role = null;
-    ws.name = null;
   });
 });
 
