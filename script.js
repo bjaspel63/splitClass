@@ -41,6 +41,9 @@ let studentName = null;
 
 const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
+// Add a flag to track if an error was shown
+let hasError = false;
+
 /* --- UI Helpers --- */
 
 function updateStudentCount() {
@@ -50,15 +53,15 @@ function updateStudentCount() {
   studentCountDisplay.textContent = count;
 
   studentsList.innerHTML = "";
+  studentsListContainer.classList.remove("hidden"); // Always show container here
+
   if (count > 0) {
-    studentsListContainer.classList.remove("hidden"); // Show container
     for (const info of Object.values(teacherPeers)) {
       const li = document.createElement("li");
       li.textContent = info.name || "Anonymous";
       studentsList.appendChild(li);
     }
   } else {
-    studentsListContainer.classList.remove("hidden"); // Show container
     const li = document.createElement("li");
     li.innerHTML = "<em>No students yet</em>";
     studentsList.appendChild(li);
@@ -70,7 +73,6 @@ function updateUIForRole() {
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
 
-    // Show student list container and hide video
     studentsListContainer.classList.remove("hidden");
     video.classList.add("hidden");
 
@@ -105,20 +107,19 @@ function updateUIForRole() {
 }
 
 function showJoinedInfo() {
-  // Hide inputs and their labels on join
   studentNameInput.classList.add("hidden");
   studentNameInput.previousElementSibling.classList.add("hidden");
   roomInput.classList.add("hidden");
   roomInput.previousElementSibling.classList.add("hidden");
 
   if (isTeacher) {
-    nameContainer.classList.add("hidden"); // teachers don't show name container
-    roomContainer.classList.remove("hidden"); // show room container
+    nameContainer.classList.add("hidden");
+    roomContainer.classList.remove("hidden");
     displayRoom.textContent = roomName;
   } else {
-    nameContainer.classList.remove("hidden"); // show name container
+    nameContainer.classList.remove("hidden");
     displayName.textContent = studentName;
-    roomContainer.classList.remove("hidden"); // show room container
+    roomContainer.classList.remove("hidden");
     displayRoom.textContent = roomName;
   }
 }
@@ -181,6 +182,7 @@ function resetUIAfterError() {
   roomName = null;
   isTeacher = false;
   isSharing = false;
+  hasError = false;
 }
 
 /* --- Signaling & WebRTC --- */
@@ -192,6 +194,8 @@ function sendSignal(msg) {
 
 function connectSignaling(room, role, extraPayload = {}) {
   console.log("Connecting as", role, "to room", room);
+  hasError = false; // reset error flag
+
   ws = new WebSocket(signalingUrl);
 
   ws.onopen = () => {
@@ -213,6 +217,7 @@ function connectSignaling(room, role, extraPayload = {}) {
 
     switch (data.type) {
       case "error":
+        hasError = true;
         status.textContent = `Error: ${data.message || "Unknown error"}`;
         resetUIAfterError();
         break;
@@ -297,11 +302,6 @@ function connectSignaling(room, role, extraPayload = {}) {
           }
         }
         break;
-        
-        case "error":
-  				status.textContent = `Error: ${data.message || "Unknown error"}`;
-  				resetUIAfterError();
-  				break;
 
       case "candidate":
         if (isTeacher) {
@@ -338,12 +338,16 @@ function connectSignaling(room, role, extraPayload = {}) {
 
   ws.onclose = () => {
     console.log("WebSocket connection closed");
-    status.textContent = "Disconnected from signaling server.";
+    if (!hasError) {
+      status.textContent = "Disconnected from signaling server.";
+    }
   };
 
   ws.onerror = (err) => {
     console.error("WebSocket error:", err);
-    status.textContent = "Signaling server error.";
+    if (!hasError) {
+      status.textContent = "Signaling server error.";
+    }
   };
 }
 
@@ -508,6 +512,7 @@ function closeSession() {
   roomName = null;
   isTeacher = false;
   isSharing = false;
+  hasError = false;
   studentsList.innerHTML = "";
   notesArea.value = "";
 
