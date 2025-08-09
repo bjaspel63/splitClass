@@ -10,16 +10,17 @@
   <div id="app">
     <!-- Header (common) -->
     <header>
-      <!-- Removed appTitle -->
+      <!-- Removed appTitle here as requested -->
 
       <!-- Display joined info with labels -->
-      <div id="joinedInfo" class="joined-info" role="region" aria-live="polite" style="display: flex; gap: 20px; align-items: center;">
+      <div id="joinedInfo" class="joined-info" role="region" aria-live="polite">
         <div id="nameContainer" class="hidden">
           <label for="displayName" class="label-bold">Your Name:</label>
           <span id="displayName" class="bold-text"></span>
         </div>
-        <div id="roomContainer" class="hidden" style="font-weight: bold; font-size: 1.1em;">
-          Room: <span id="displayRoom"></span>
+        <div id="roomContainer" class="hidden">
+          <label for="displayRoom" class="label-bold">Room Name:</label>
+          <span id="displayRoom" class="bold-text"></span>
         </div>
       </div>
     </header>
@@ -36,6 +37,8 @@
       <div class="input-group">
         <label for="roomInput">Room Name</label>
         <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
+        <!-- Room name display below input -->
+        <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: #333;"></div>
       </div>
 
       <div class="buttons">
