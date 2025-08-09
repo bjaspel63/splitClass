@@ -58,7 +58,7 @@ function updateStudentCount() {
 
 function updateUIForRole() {
   if (isTeacher) {
-    // Teacher: left pane attendance only, right pane notes visible
+    // Teacher: left pane is attendance only, right pane notes visible
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
     studentsListContainer.style.display = "block";
@@ -86,7 +86,7 @@ function updateUIForRole() {
 
     studentCountDiv.style.display = "none";
     btnShareScreen.style.display = "none";
-    btnCloseSession.style.display = "none";
+    btnCloseSession.style.display = "inline-block";
   }
 }
 
@@ -113,8 +113,26 @@ function connectSignaling(room, role, extraPayload = {}) {
       case "joined":
         isTeacher = (data.role === "teacher");
         status.textContent = `Joined room as ${data.role}.`;
+
+        // Hide initial inputs/buttons and show joined room info
+        btnTeacher.style.display = "none";
+        btnStudent.style.display = "none";
+        studentNameInput.style.display = "none";
+        roomInput.style.display = "none";
+
+        // Show Close Session button on both sides
+        btnCloseSession.style.display = "inline-block";
+
         setupSection.classList.add("hidden");
         mainSection.classList.remove("hidden");
+
+        // Adjust layout classes for student equal panes
+        if (!isTeacher) {
+          mainSection.classList.add("student-equal-sides");
+        } else {
+          mainSection.classList.remove("student-equal-sides");
+        }
+
         updateUIForRole();
 
         if (isTeacher) {
