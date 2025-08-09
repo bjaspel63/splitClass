@@ -13,13 +13,15 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
   width: 90vw;
   max-width: 1200px;
   height: 90vh;
-  background: white;
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
   display: flex;
@@ -30,7 +32,7 @@ body, html {
 /* Header */
 header {
   background-color: #2563eb;
-  color: white;
+  color: #fff;
   padding: 1rem 2rem;
   user-select: none;
   display: flex;
@@ -52,6 +54,7 @@ header {
   justify-content: center;
   align-items: center;
   color: #f3f4f6;
+  font-size: 1rem;
 }
 
 #nameContainer,
@@ -68,7 +71,6 @@ header {
 #displayName,
 #displayRoom {
   font-weight: 700;
-  font-size: 1rem;
   opacity: 0.85;
 }
 
@@ -119,6 +121,7 @@ header {
   outline: none;
 }
 
+/* Buttons container */
 .buttons {
   display: flex;
   gap: 1rem;
@@ -135,18 +138,24 @@ header {
   cursor: pointer;
   font-weight: 600;
   color: white;
-  background: #2563eb;
+  background-color: #2563eb;
   transition: background-color 0.25s ease;
+  user-select: none;
 }
 
-.buttons button:hover {
-  background: #1e40af;
+.buttons button:hover,
+.buttons button:focus-visible {
+  background-color: #1e40af;
+  outline: none;
 }
 
+/* Status text for errors and messages */
 .status-text {
   color: #dc2626; /* red for errors */
   font-weight: 600;
   height: 1.25rem; /* reserve space */
+  min-height: 1.25rem;
+  text-align: center;
 }
 
 /* Main Section Layout */
@@ -213,13 +222,23 @@ header {
   border-bottom: 1px solid #c7d2fe;
 }
 
+/* Scrollbar styling for student list */
+#studentsListContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+#studentsListContainer::-webkit-scrollbar-thumb {
+  background-color: #2563eb;
+  border-radius: 4px;
+}
+
 /* Video for student */
 #video {
   width: 100%;
   height: 100%;
   object-fit: contain;
   border-radius: 0.75rem;
-  background: black;
+  background-color: black;
 }
 
 /* Right Pane */
@@ -229,7 +248,7 @@ header {
   border-radius: 0.75rem;
   overflow: hidden;
   transition: width 0.3s ease;
-  background: #f3f4f6;
+  background-color: #f3f4f6;
 }
 
 /* Teacher: 75% width for notes */
@@ -255,7 +274,13 @@ header {
   font-size: 1.1rem;
   color: #1e293b;
   resize: none;
-  background: white;
+  background-color: white;
+  transition: border-color 0.3s ease;
+}
+
+#notesArea:focus {
+  border-color: #2563eb;
+  outline: none;
 }
 
 /* Editor iframe */
@@ -274,6 +299,7 @@ header {
   justify-content: flex-end;
   gap: 1rem;
   transition: opacity 0.3s ease, height 0.3s ease;
+  user-select: none;
 }
 
 /* Hide controls by default */
@@ -292,18 +318,20 @@ header {
   border: none;
   font-weight: 600;
   cursor: pointer;
-  background: #2563eb;
+  background-color: #2563eb;
   color: white;
   transition: background-color 0.25s ease;
 }
 
-#teacherControls button:hover:enabled {
-  background: #1e40af;
+#teacherControls button:hover:enabled,
+#teacherControls button:focus-visible:enabled {
+  background-color: #1e40af;
+  outline: none;
 }
 
 /* Disabled state for share screen button */
 #btnShareScreen:disabled {
-  background: #94a3b8;
+  background-color: #94a3b8;
   cursor: not-allowed;
 }
 
@@ -314,23 +342,15 @@ header {
   border: none;
   font-weight: 600;
   cursor: pointer;
-  background: #dc2626;
+  background-color: #dc2626;
   color: white;
   transition: background-color 0.25s ease;
 }
 
-#studentControls button:hover {
-  background: #b91c1c;
-}
-
-/* Scroll styling for student list */
-#studentsListContainer::-webkit-scrollbar {
-  width: 8px;
-}
-
-#studentsListContainer::-webkit-scrollbar-thumb {
-  background-color: #2563eb;
-  border-radius: 4px;
+#studentControls button:hover,
+#studentControls button:focus-visible {
+  background-color: #b91c1c;
+  outline: none;
 }
 
 /* Responsive */
