@@ -253,6 +253,7 @@ header {
   border-radius: 0.75rem;
   overflow: hidden;
   transition: width 0.3s ease;
+  height:100%;
   background-color: #f3f4f6;
 }
 
@@ -305,6 +306,7 @@ header {
   gap: 1rem;
   transition: opacity 0.3s ease, height 0.3s ease;
   user-select: none;
+  flex-shrink:0;
 }
 
 /* Hide controls by default */
@@ -377,4 +379,11 @@ header {
   #editorFrame {
     height: 100%;
   }
+  #notesArea,
+  #pdfViewerContainer {
+    flex: 1 1 auto;
+    overflow: auto;
+    min-height:0;
+  }
+  
 }
