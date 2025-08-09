@@ -5,13 +5,12 @@ const roomInput = document.getElementById("roomInput");
 const btnTeacher = document.getElementById("btnTeacher");
 const btnStudent = document.getElementById("btnStudent");
 const btnShareScreen = document.getElementById("btnShareScreen");
-const btnCloseSession = document.getElementById("btnCloseSession");
+const btnCloseSessionTeacher = document.getElementById("btnCloseSession"); // shared ID for both roles, handle carefully
+const btnCloseSessionStudent = document.getElementById("btnCloseSession"); // same button for both; adjust usage if needed
 const status = document.getElementById("status");
 const setupSection = document.getElementById("setup");
 const mainSection = document.getElementById("main");
-const teacherDisconnected = document.getElementById("teacherDisconnected");
 const leftPane = document.getElementById("leftPane");
-const studentCountDiv = document.getElementById("studentCount");
 const studentsListContainer = document.getElementById("studentsListContainer");
 const studentsList = document.getElementById("studentsList");
 const studentCountDisplay = document.getElementById("studentCountDisplay");
@@ -22,6 +21,9 @@ const studentNameInput = document.getElementById("studentNameInput");
 
 const displayName = document.getElementById("displayName");
 const displayRoom = document.getElementById("displayRoom");
+
+const teacherControls = document.getElementById("teacherControls");
+const studentControls = document.getElementById("studentControls");
 
 let ws = null;
 let roomName = null;
@@ -41,8 +43,6 @@ const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 function updateStudentCount() {
   if (!isTeacher) return;
   const count = Object.keys(teacherPeers).length;
-  studentCountDiv.textContent = `Students: ${count}`;
-  studentCountDiv.style.display = count > 0 ? "inline-block" : "none";
   studentCountDisplay.textContent = count;
 
   if (count > 0) {
@@ -71,13 +71,9 @@ function updateUIForRole() {
 
     document.getElementById("rightPane").style.display = "flex";
 
-    studentCountDiv.style.display = "inline-block";
-    btnShareScreen.style.display = "inline-block";
-    btnShareScreen.disabled = false;
-    btnCloseSession.style.display = "inline-block";
+    teacherControls.classList.remove("hidden");
+    studentControls.classList.add("hidden");
 
-    mainSection.classList.remove("student-equal-sides");
-    mainSection.classList.add("teacher-wide-notes");
   } else {
     leftPane.classList.remove("teacher-no-video");
     leftPane.classList.add("student-full");
@@ -86,14 +82,11 @@ function updateUIForRole() {
 
     notesArea.classList.add("hidden");
     editorFrame.classList.remove("hidden");
+
     document.getElementById("rightPane").style.display = "flex";
 
-    studentCountDiv.style.display = "none";
-    btnShareScreen.style.display = "none";
-    btnCloseSession.style.display = "inline-block";
-
-    mainSection.classList.add("student-equal-sides");
-    mainSection.classList.remove("teacher-wide-notes");
+    teacherControls.classList.add("hidden");
+    studentControls.classList.remove("hidden");
   }
 }
 
@@ -173,11 +166,14 @@ function connectSignaling(room, role, extraPayload = {}) {
             });
           }
           updateStudentCount();
+          btnShareScreen.style.display = "inline-block";
           btnShareScreen.disabled = false;
+          teacherControls.classList.remove("hidden");
           status.textContent = `Teacher ready — ${Object.keys(teacherPeers).length} student(s) connected`;
         } else {
           if (data.id) {
             studentId = data.id;
+            studentControls.classList.remove("hidden");
             status.textContent = `Student ready: ${studentName}`;
           }
         }
@@ -247,7 +243,6 @@ function connectSignaling(room, role, extraPayload = {}) {
         break;
 
       case "teacher-left":
-        teacherDisconnected.classList.remove("hidden");
         status.textContent = "Teacher disconnected.";
         if (studentPc) {
           try {
@@ -416,10 +411,14 @@ function closeSession() {
   leftPane.classList.remove("teacher-no-video", "student-full");
   document.getElementById("rightPane").style.display = "flex";
 
+  teacherControls.classList.add("hidden");
+  studentControls.classList.add("hidden");
+
   btnShareScreen.style.display = "none";
-  btnCloseSession.style.display = "none";
   btnShareScreen.disabled = true;
-  studentCountDiv.style.display = "none";
+
+  studentsListContainer.style.display = "none";
+  studentCountDisplay.textContent = "0";
 
   for (const key in teacherPeers) delete teacherPeers[key];
   studentId = null;
@@ -428,8 +427,6 @@ function closeSession() {
   isTeacher = false;
   isSharing = false;
   studentsList.innerHTML = "";
-  studentCountDisplay.textContent = "0";
-
   notesArea.value = "";
 
   displayName.style.display = "none";
@@ -473,7 +470,11 @@ btnShareScreen.addEventListener("click", () => {
   startScreenShare();
 });
 
-btnCloseSession.addEventListener("click", () => {
+btnCloseSessionTeacher.addEventListener("click", () => {
+  closeSession();
+});
+
+btnCloseSessionStudent.addEventListener("click", () => {
   closeSession();
 });
 
@@ -482,8 +483,8 @@ btnCloseSession.addEventListener("click", () => {
 document.addEventListener("DOMContentLoaded", () => {
   status.textContent = "Enter room name and your name, then select role to join.";
   btnShareScreen.style.display = "none";
-  btnCloseSession.style.display = "none";
-  studentCountDiv.style.display = "none";
+  teacherControls.classList.add("hidden");
+  studentControls.classList.add("hidden");
   studentsListContainer.style.display = "none";
   notesArea.classList.add("hidden");
   editorFrame.classList.remove("hidden");
