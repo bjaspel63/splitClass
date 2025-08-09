@@ -108,40 +108,6 @@ wss.on('connection', (ws) => {
         }
         break;
 
-      case 'chat-message':
-        // Relay chat messages to everyone in the room except sender
-        if (ws.role === 'teacher') {
-          // Send to all students
-          currentRoom.students.forEach((studentWs) => {
-            if (studentWs.readyState === WebSocket.OPEN && studentWs !== ws) {
-              studentWs.send(JSON.stringify({
-                type: 'chat-message',
-                from: 'Teacher',
-                payload
-              }));
-            }
-          });
-        } else if (ws.role === 'student') {
-          // Send to teacher and all other students
-          if (currentRoom.teacher && currentRoom.teacher.readyState === WebSocket.OPEN && currentRoom.teacher !== ws) {
-            currentRoom.teacher.send(JSON.stringify({
-              type: 'chat-message',
-              from: ws.id,
-              payload
-            }));
-          }
-          currentRoom.students.forEach((studentWs, studentId) => {
-            if (studentWs.readyState === WebSocket.OPEN && studentWs !== ws) {
-              studentWs.send(JSON.stringify({
-                type: 'chat-message',
-                from: ws.id,
-                payload
-              }));
-            }
-          });
-        }
-        break;
-
       case 'leave':
         // Student or teacher leave handling
         if (ws.role === 'student') {
