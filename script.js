@@ -1,9 +1,9 @@
-const signalingUrl = "wss://splitclass-production.up.railway.app"; // Replace with your deployed signaling server WebSocket URL
-
+const signalingUrl = "wss://splitclass-production.up.railway.app";
 const video = document.getElementById("video");
 const roomInput = document.getElementById("roomInput");
 const btnTeacher = document.getElementById("btnTeacher");
 const btnStudent = document.getElementById("btnStudent");
+const btnShareScreen = document.getElementById("btnShareScreen");
 const status = document.getElementById("status");
 const setupSection = document.getElementById("setup");
 const mainSection = document.getElementById("main");
@@ -13,6 +13,8 @@ let ws;
 let pc;
 let roomName;
 let isTeacher = false;
+let screenStream = null;
+let isSharing = false;
 
 const rtcConfig = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -38,12 +40,15 @@ function connectSignaling(room, role) {
     let data;
     try {
       data = JSON.parse(msg.data);
-    } catch (e) { return; }
+    } catch (e) {
+      return;
+    }
 
     if (data.type === "joined") {
       status.textContent = `Joined room as ${data.role}.`;
       if (role === "teacher") {
-        startTeacherStream();
+        // Enable share screen button when teacher joined
+        btnShareScreen.disabled = false;
       }
     } else if (data.type === "new-student" && role === "teacher") {
       await createOfferToStudents();
@@ -61,42 +66,21 @@ function connectSignaling(room, role) {
       }
     } else if (data.type === "teacher-left") {
       teacherDisconnected.classList.remove("hidden");
+      teacherDisconnected.classList.add("visible");
+      btnShareScreen.disabled = true;
     }
   };
 
   ws.onclose = () => {
     status.textContent = "Disconnected from signaling server.";
     teacherDisconnected.classList.add("hidden");
+    teacherDisconnected.classList.remove("visible");
+    btnShareScreen.disabled = true;
   };
 
   ws.onerror = () => {
     status.textContent = "Signaling server error.";
   };
-}
-
-// Teacher: get screen stream and setup RTCPeerConnection
-async function startTeacherStream() {
-  try {
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-
-    setupSection.classList.add("hidden");
-    mainSection.classList.remove("hidden");
-    teacherDisconnected.classList.add("hidden");
-    video.srcObject = stream;
-
-    pc = new RTCPeerConnection(rtcConfig);
-    stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        sendSignal({ type: "candidate", room: roomName, payload: event.candidate });
-      }
-    };
-
-  } catch (err) {
-    alert("Screen share permission denied or error: " + err.message);
-    status.textContent = "Screen share permission denied.";
-  }
 }
 
 // Teacher: create offer and send to all students
@@ -113,6 +97,7 @@ async function handleOffer(offer) {
 
   pc.ontrack = (event) => {
     teacherDisconnected.classList.add("hidden");
+    teacherDisconnected.classList.remove("visible");
     setupSection.classList.add("hidden");
     mainSection.classList.remove("hidden");
     video.srcObject = event.streams[0];
@@ -136,6 +121,62 @@ async function handleAnswer(answer) {
   await pc.setRemoteDescription(new RTCSessionDescription(answer));
 }
 
+async function startSharing() {
+  try {
+    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+
+    setupSection.classList.add("hidden");
+    mainSection.classList.remove("hidden");
+    teacherDisconnected.classList.add("hidden");
+    teacherDisconnected.classList.remove("visible");
+
+    video.srcObject = screenStream;
+
+    pc = new RTCPeerConnection(rtcConfig);
+    screenStream.getTracks().forEach((track) => pc.addTrack(track, screenStream));
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        sendSignal({ type: "candidate", room: roomName, payload: event.candidate });
+      }
+    };
+
+    btnShareScreen.textContent = "Stop Sharing";
+    isSharing = true;
+
+    // Fullscreen UI
+    document.getElementById("leftPane").classList.add("fullscreen");
+
+    // When user stops sharing via browser UI
+    screenStream.getVideoTracks()[0].addEventListener("ended", () => {
+      stopSharing();
+    });
+  } catch (err) {
+    alert("Screen share permission denied or error: " + err.message);
+    status.textContent = "Screen share permission denied.";
+  }
+}
+
+function stopSharing() {
+  if (screenStream) {
+    screenStream.getTracks().forEach((track) => track.stop());
+    screenStream = null;
+  }
+
+  const leftPane = document.getElementById("leftPane");
+  leftPane.classList.remove("fullscreen");
+
+  video.srcObject = null;
+
+  if (pc) {
+    pc.close();
+    pc = null;
+  }
+
+  btnShareScreen.textContent = "Share Screen";
+  isSharing = false;
+}
+
 btnTeacher.onclick = () => {
   const val = roomInput.value.trim();
   if (!val) {
@@ -156,4 +197,12 @@ btnStudent.onclick = () => {
   roomName = val;
   isTeacher = false;
   connectSignaling(roomName, "student");
+};
+
+btnShareScreen.onclick = () => {
+  if (!isSharing) {
+    startSharing();
+  } else {
+    stopSharing();
+  }
 };
