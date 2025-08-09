@@ -11,7 +11,6 @@ const setupSection = document.getElementById("setup");
 const mainSection = document.getElementById("main");
 const teacherDisconnected = document.getElementById("teacherDisconnected");
 const leftPane = document.getElementById("leftPane");
-const rightPane = document.getElementById("rightPane");
 
 let ws;
 let pc;
@@ -24,12 +23,14 @@ const rtcConfig = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
+// Send message to signaling server
 function sendSignal(msg) {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(msg));
   }
 }
 
+// Connect to signaling server and handle messages
 function connectSignaling(room, role) {
   ws = new WebSocket(signalingUrl);
 
@@ -84,6 +85,7 @@ function connectSignaling(room, role) {
   };
 }
 
+// Teacher creates offer to send to all students
 async function createOfferToStudents() {
   if (!pc) return;
   const offer = await pc.createOffer();
@@ -91,6 +93,7 @@ async function createOfferToStudents() {
   sendSignal({ type: "offer", room: roomName, payload: offer });
 }
 
+// Student handles offer from teacher and sends back answer
 async function handleOffer(offer) {
   pc = new RTCPeerConnection(rtcConfig);
 
@@ -114,11 +117,13 @@ async function handleOffer(offer) {
   sendSignal({ type: "answer", room: roomName, payload: answer });
 }
 
+// Teacher handles answer from student
 async function handleAnswer(answer) {
   if (!pc) return;
   await pc.setRemoteDescription(new RTCSessionDescription(answer));
 }
 
+// Start screen sharing (teacher)
 async function startSharing() {
   if (pc) {
     pc.close();
@@ -165,6 +170,7 @@ async function startSharing() {
   }
 }
 
+// Stop screen sharing (teacher)
 function stopSharing() {
   if (screenStream) {
     screenStream.getTracks().forEach((track) => track.stop());
@@ -185,16 +191,15 @@ function stopSharing() {
   isSharing = false;
 }
 
+// Update UI buttons based on role
 function updateUIForRole() {
   if (isTeacher) {
-    // Teacher: Hide join and start buttons, show share and close
     btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
     btnShareScreen.style.display = "inline-block";
-    btnShareScreen.disabled = false;
+    btnShareScreen.disabled = true; // enable after signaling join
     btnCloseSession.style.display = "inline-block";
   } else {
-    // Student: Hide start, join, share; show close only
     btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
     btnShareScreen.style.display = "none";
@@ -202,8 +207,8 @@ function updateUIForRole() {
   }
 }
 
+// Reset UI and variables to initial setup screen
 function resetToSetup() {
-  // Close streams & connections
   stopSharing();
   if (pc) {
     pc.close();
@@ -233,9 +238,9 @@ function resetToSetup() {
   btnStudent.style.display = "inline-block";
   btnShareScreen.style.display = "none";
   btnCloseSession.style.display = "none";
-  btnShareScreen.disabled = true;
 }
 
+// Button event handlers
 btnTeacher.onclick = () => {
   const val = roomInput.value.trim();
   if (!val) {
