@@ -35,8 +35,13 @@ header {
   color: #3b82f6;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .header-right button {
-  margin-left: 1rem;
   background: #3b82f6;
   border: none;
   padding: 0.5rem 1rem;
@@ -58,16 +63,14 @@ header {
 
 /* Student count badge */
 #studentCount {
-  margin-left: 1rem;
   font-weight: 600;
   color: #f97316;
-  align-self: center;
-  font-size: 1rem;
   user-select: none;
   display: none;
+  font-size: 1rem;
 }
 
-/* Setup */
+/* Setup section */
 #setup {
   padding: 1rem 1.5rem;
   background: #0f172a;
@@ -76,9 +79,17 @@ header {
   flex-wrap: wrap;
   gap: 1rem;
   align-items: flex-start;
+  max-width: 650px;
+  margin: 1rem auto;
 }
 
-/* Inputs in setup */
+#setup > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 250px;
+  gap: 0.5rem;
+}
+
 #setup label {
   font-weight: 600;
 }
@@ -90,7 +101,6 @@ header {
   border-radius: 6px;
   border: none;
   width: 100%;
-  max-width: 300px;
   background: #1e293b;
   color: #f1f5f9;
 }
@@ -98,8 +108,9 @@ header {
 #status {
   font-weight: 600;
   color: #f97316;
-  margin: 0.5rem 0 0 0;
+  margin-top: 0.5rem;
   width: 100%;
+  flex-basis: 100%;
 }
 
 /* Main split view */
@@ -109,6 +120,8 @@ header {
   height: calc(100vh - 140px);
   gap: 1rem;
   padding: 0 1rem 1rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Left Pane */
@@ -140,7 +153,7 @@ header {
 
 /* Student left pane: full video */
 #leftPane.student-full {
-  flex: 2 1 60%;
+  flex: 1; /* equal share with right pane */
 }
 
 #leftPane.student-full video {
@@ -170,7 +183,7 @@ header {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  flex: 1 1 40%;
+  flex: 1; /* equal share with left pane for student */
   position: relative;
 }
 
@@ -216,7 +229,6 @@ footer {
     padding: 1rem;
   }
   #setup > div {
-    margin-left: 0 !important;
     max-width: 100% !important;
   }
   #main {
@@ -228,5 +240,13 @@ footer {
     flex: unset;
     width: 100%;
     height: 50vh;
+  }
+  /* Inputs labels on top for mobile, inputs full width */
+  #setup label {
+    display: block;
+  }
+  #studentNameInput,
+  #roomInput {
+    width: 100%;
   }
 }
