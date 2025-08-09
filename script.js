@@ -5,7 +5,7 @@ const roomInput = document.getElementById("roomInput");
 const btnTeacher = document.getElementById("btnTeacher");
 const btnStudent = document.getElementById("btnStudent");
 const btnShareScreen = document.getElementById("btnShareScreen");
-const btnCloseSession = document.getElementById("btnCloseSession"); // one shared button
+const btnCloseSession = document.getElementById("btnCloseSession");
 const status = document.getElementById("status");
 const setupSection = document.getElementById("setup");
 const mainSection = document.getElementById("main");
@@ -44,17 +44,19 @@ function updateStudentCount() {
   const count = Object.keys(teacherPeers).length;
   studentCountDisplay.textContent = count;
 
+  studentsList.innerHTML = "";
   if (count > 0) {
     studentsListContainer.style.display = "block";
-    studentsList.innerHTML = "";
     for (const info of Object.values(teacherPeers)) {
       const li = document.createElement("li");
       li.textContent = info.name || "Anonymous";
       studentsList.appendChild(li);
     }
   } else {
-    studentsListContainer.style.display = "block"; // show empty list container even if no students
-    studentsList.innerHTML = "<li><em>No students yet</em></li>";
+    studentsListContainer.style.display = "block";
+    const li = document.createElement("li");
+    li.innerHTML = "<em>No students yet</em>";
+    studentsList.appendChild(li);
   }
 }
 
@@ -73,7 +75,6 @@ function updateUIForRole() {
     teacherControls.classList.remove("hidden");
     studentControls.classList.add("hidden");
 
-    // Layout widths
     mainSection.classList.remove("student-role");
     mainSection.classList.add("teacher-role");
 
@@ -91,17 +92,11 @@ function updateUIForRole() {
     teacherControls.classList.add("hidden");
     studentControls.classList.remove("hidden");
 
-    // Layout widths
     mainSection.classList.remove("teacher-role");
     mainSection.classList.add("student-role");
   }
 }
 
-/**
- * Show joined info in setup section after role selected:
- * - Teacher: show only room name text (hide inputs and labels)
- * - Student: show student name and room name texts (hide inputs and labels)
- */
 function showJoinedInfo() {
   studentNameInput.style.display = "none";
   studentNameInput.previousElementSibling.style.display = "none";
@@ -184,7 +179,6 @@ function connectSignaling(room, role, extraPayload = {}) {
         mainSection.classList.remove("hidden");
 
         showJoinedInfo();
-
         updateUIForRole();
 
         if (isTeacher) {
