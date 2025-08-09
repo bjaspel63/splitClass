@@ -229,6 +229,85 @@ header {
   resize: none;
 }
 
+body, html {
+  margin: 0; padding: 0; height: 100%;
+  font-family: system-ui, sans-serif;
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+#joinPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 1rem;
+}
+
+#joinPage input {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: none;
+  width: 200px;
+}
+
+#joinPage button {
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+  font-weight: 600;
+}
+
+#joinPage button:hover {
+  background: #2563eb;
+}
+
+#status {
+  height: 1.5rem;
+  color: #f97316;
+}
+
+#roomPage header button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#btnShareScreen {
+  background: #3b82f6;
+  color: white;
+}
+
+#btnShareScreen:hover {
+  background: #2563eb;
+}
+
+#btnDownloadNotes {
+  background: #f97316;
+  color: white;
+}
+
+#btnDownloadNotes:hover {
+  background: #ea580c;
+}
+
+#btnCloseSession, #btnCloseSessionStudent {
+  background: #64748b;
+  color: white;
+}
+
+#btnCloseSession:hover, #btnCloseSessionStudent:hover {
+  background: #475569;
+}
+
+
 /* Footer */
 footer {
   text-align: center;
