@@ -147,6 +147,52 @@ function sendSignal(msg) {
   ws.send(JSON.stringify(msg));
 }
 
+function resetUIAfterError() {
+  // Close ws connection if open
+  if (ws) {
+    try {
+      ws.close();
+    } catch {}
+    ws = null;
+  }
+
+  // Reset UI back to setup screen
+  setupSection.classList.remove("hidden");
+  mainSection.classList.add("hidden");
+
+  btnTeacher.classList.remove("hidden");
+  btnStudent.classList.remove("hidden");
+
+  studentNameInput.classList.remove("hidden");
+  studentNameInput.previousElementSibling.classList.remove("hidden");
+  roomInput.classList.remove("hidden");
+  roomInput.previousElementSibling.classList.remove("hidden");
+
+  nameContainer.classList.add("hidden");
+  roomContainer.classList.add("hidden");
+
+  teacherControls.classList.add("hidden");
+  studentControls.classList.add("hidden");
+
+  studentsListContainer.classList.add("hidden");
+  studentCountDisplay.textContent = "0";
+
+  studentsList.innerHTML = "";
+  notesArea.value = "";
+
+  leftPane.classList.remove("teacher-no-video", "student-full");
+  document.getElementById("rightPane").style.display = "flex";
+
+  // Clear variables
+  for (const key in teacherPeers) delete teacherPeers[key];
+  studentId = null;
+  studentName = null;
+  roomName = null;
+  isTeacher = false;
+  isSharing = false;
+}
+
+/* --- Main connection function --- */
 function connectSignaling(room, role, extraPayload = {}) {
   console.log("Connecting as", role, "to room", room);
   ws = new WebSocket(signalingUrl);
@@ -169,6 +215,12 @@ function connectSignaling(room, role, extraPayload = {}) {
     console.log("Signaling message received:", data);
 
     switch (data.type) {
+      case "error":
+        // Show error from server and reset UI so user can retry
+        status.textContent = `Error: ${data.message || "Unknown error"}`;
+        resetUIAfterError();
+        break;
+
       case "joined":
         isTeacher = (data.role === "teacher");
         status.textContent = `Joined room as ${data.role}.`;
@@ -405,7 +457,7 @@ function stopScreenShare() {
 function closeSession() {
   if (ws) {
     try {
-      sendSignal({ type: "close", room: roomName });
+      sendSignal({ type: "leave", room: roomName });
       ws.close();
     } catch {}
     ws = null;
