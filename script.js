@@ -225,7 +225,9 @@ async function offerToStudent(studentId) {
 /* Called when teacher toggles startSharing */
 async function startSharing() {
   try {
-    Object.values(teacherPeers).forEach(info => { if (info.pc) try { info.pc.close(); } catch{} });
+    Object.values(teacherPeers).forEach(info => {
+      if (info.pc) try { info.pc.close(); } catch {}
+    });
     Object.keys(teacherPeers).forEach(k => teacherPeers[k].pc = null);
 
     screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
@@ -264,7 +266,7 @@ function stopSharing() {
   Object.keys(teacherPeers).forEach(id => {
     const info = teacherPeers[id];
     if (info.pc) {
-      try { info.pc.close(); } catch (e) {}
+      try { info.pc.close(); } catch(e) {}
       info.pc = null;
     }
   });
@@ -281,7 +283,7 @@ function stopSharing() {
 
 async function handleOfferAsStudent(offer) {
   if (studentPc) {
-    try { studentPc.close(); } catch(e) {}
+    try { studentPc.close(); } catch (e) {}
     studentPc = null;
   }
 
@@ -309,108 +311,106 @@ async function handleOfferAsStudent(offer) {
     await pc.setLocalDescription(answer);
     sendSignal({ type: "answer", room: roomName, payload: answer });
   } catch (err) {
-    console.error("student handleOffer error:", err);
+    console.error("Error handling offer as student:", err);
   }
 }
 
-/* --------------------- UI and helpers --------------------- */
+/* --------------------- UI / Button handlers --------------------- */
 
 function updateUIForRole() {
   if (isTeacher) {
-    btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
+    btnStudent.style.display = "none";
     btnShareScreen.style.display = "inline-block";
-    btnShareScreen.disabled = true;
     btnCloseSession.style.display = "inline-block";
-    studentCountDiv.style.display = "inline-block";
     studentNameContainer.style.display = "none";
+    studentCountDiv.style.display = Object.keys(teacherPeers).length > 0 ? "inline-block" : "none";
   } else {
-    btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
+    btnStudent.style.display = "none";
     btnShareScreen.style.display = "none";
     btnCloseSession.style.display = "inline-block";
-    studentCountDiv.style.display = "none";
     studentNameContainer.style.display = "block";
+    studentCountDiv.style.display = "none";
   }
 }
 
-function resetToSetup() {
-  try { if (ws && ws.readyState === WebSocket.OPEN) sendSignal({ type: "leave", room: roomName }); } catch {}
-  if (ws) { try { ws.close(); } catch {} ws = null; }
+btnTeacher.addEventListener("click", () => {
+  roomName = roomInput.value.trim();
+  if (!roomName) {
+    alert("Please enter a room name.");
+    return;
+  }
+  isTeacher = true;
+  connectSignaling(roomName, "teacher");
+});
 
-  if (studentPc) { try { studentPc.close(); } catch {} studentPc = null; }
+btnStudent.addEventListener("click", () => {
+  roomName = roomInput.value.trim();
+  studentName = studentNameInput.value.trim();
+  if (!roomName) {
+    alert("Please enter a room name.");
+    return;
+  }
+  if (!studentName) {
+    alert("Please enter your name.");
+    return;
+  }
+  isTeacher = false;
+  connectSignaling(roomName, "student", { name: studentName });
+});
 
-  Object.keys(teacherPeers).forEach(k => {
-    if (teacherPeers[k] && teacherPeers[k].pc) try { teacherPeers[k].pc.close(); } catch{}
-    teacherPeers[k] = null;
-  });
+btnShareScreen.addEventListener("click", () => {
+  if (isSharing) {
+    stopSharing();
+  } else {
+    startSharing();
+  }
+});
 
-  if (screenStream) { screenStream.getTracks().forEach(t => t.stop()); screenStream = null; }
+btnCloseSession.addEventListener("click", () => {
+  if (ws) ws.close();
+  resetUI();
+});
 
-  roomName = null;
+function resetUI() {
   isTeacher = false;
   isSharing = false;
+  screenStream?.getTracks().forEach(t => t.stop());
+  screenStream = null;
+
+  // Close all peer connections
+  Object.values(teacherPeers).forEach(({ pc }) => {
+    if (pc) try { pc.close(); } catch {}
+  });
+  Object.keys(teacherPeers).forEach(k => delete teacherPeers[k]);
+
+  if (studentPc) {
+    try { studentPc.close(); } catch {}
+    studentPc = null;
+  }
+
+  roomName = null;
   studentId = null;
   studentName = null;
-  video.srcObject = null;
 
-  teacherDisconnected.classList.add("hidden");
   setupSection.classList.remove("hidden");
   mainSection.classList.add("hidden");
-  leftPane.classList.remove("fullscreen");
-  mainSection.classList.remove("fullscreen");
-
   btnTeacher.style.display = "inline-block";
   btnStudent.style.display = "inline-block";
   btnShareScreen.style.display = "none";
   btnCloseSession.style.display = "none";
-
-  status.textContent = "";
+  studentNameContainer.style.display = "block";
   studentCountDiv.style.display = "none";
-  studentCountDiv.textContent = "Students: 0";
-
-  studentsListContainer.classList.add("hidden");
-  studentsList.innerHTML = "";
+  status.textContent = "";
+  video.srcObject = null;
+  teacherDisconnected.classList.add("hidden");
+  updateStudentCount();
 }
 
-/* --------------------- Buttons --------------------- */
-
-btnTeacher.onclick = () => {
-  const val = roomInput.value.trim();
-  if (!val) { alert("Please enter a room name."); return; }
-  roomName = val;
-  isTeacher = true;
-  studentNameContainer.style.display = "none";
-  updateUIForRole();
-  connectSignaling(roomName, "teacher");
-};
-
-btnStudent.onclick = () => {
-  const roomVal = roomInput.value.trim();
-  const nameVal = studentNameInput.value.trim();
-
-  if (!nameVal) {
-    alert("Please enter your name.");
-    return;
-  }
-
-  if (!roomVal) {
-    alert("Please enter a room name.");
-    return;
-  }
-
-  roomName = roomVal;
-  isTeacher = false;
-  updateUIForRole();
-
-  connectSignaling(roomName, "student", { name: nameVal }); // pass name to join payload
-};
-
-btnShareScreen.onclick = () => {
-  if (!isSharing) startSharing();
-  else stopSharing();
-};
-
-btnCloseSession.onclick = () => {
-  resetToSetup();
-};
+// Optional: Prevent form submission on Enter in inputs
+[roomInput, studentNameInput].forEach(input =>
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") e.preventDefault();
+  })
+);
