@@ -103,7 +103,6 @@ function updateUIForRole() {
  * - Student: show student name and room name texts (hide inputs and labels)
  */
 function showJoinedInfo() {
-  // Hide inputs and labels
   studentNameInput.style.display = "none";
   studentNameInput.previousElementSibling.style.display = "none";
   roomInput.style.display = "none";
@@ -129,9 +128,11 @@ function sendSignal(msg) {
 }
 
 function connectSignaling(room, role, extraPayload = {}) {
+  console.log("Connecting as", role, "to room", room);
   ws = new WebSocket(signalingUrl);
 
   ws.onopen = () => {
+    console.log("WebSocket connection opened");
     sendSignal({ type: "join", room, payload: { role, ...extraPayload } });
     status.textContent = "Connected to signaling server.";
   };
@@ -141,8 +142,11 @@ function connectSignaling(room, role, extraPayload = {}) {
     try {
       data = JSON.parse(ev.data);
     } catch {
+      console.warn("Failed to parse signaling message");
       return;
     }
+
+    console.log("Signaling message received:", data);
 
     switch (data.type) {
       case "joined":
@@ -155,7 +159,7 @@ function connectSignaling(room, role, extraPayload = {}) {
         btnTeacher.style.display = "none";
         btnStudent.style.display = "none";
 
-        setupSection.classList.remove("hidden");
+        setupSection.classList.add("hidden");
         mainSection.classList.remove("hidden");
 
         showJoinedInfo();
@@ -218,7 +222,7 @@ function connectSignaling(room, role, extraPayload = {}) {
             try {
               await peerInfo.pc.setRemoteDescription(new RTCSessionDescription(data.payload));
             } catch (err) {
-              console.warn("Failed to set remote desc (answer) for", data.from, err);
+              console.warn("Failed to set remote description (answer) for", data.from, err);
             }
           }
         }
@@ -259,6 +263,7 @@ function connectSignaling(room, role, extraPayload = {}) {
   };
 
   ws.onclose = () => {
+    console.log("WebSocket connection closed");
     status.textContent = "Disconnected from signaling server.";
   };
 
@@ -343,12 +348,10 @@ async function startScreenShare() {
     isSharing = true;
     btnShareScreen.textContent = "Stop Sharing";
 
-    // Send offer to all connected students with updated stream
     for (const studentId of Object.keys(teacherPeers)) {
       offerToStudent(studentId);
     }
 
-    // When sharing ends:
     screenStream.getVideoTracks()[0].onended = () => {
       stopScreenShare();
     };
@@ -476,12 +479,14 @@ btnCloseSession.addEventListener("click", () => {
 
 /* --- Init --- */
 
-status.textContent = "Enter room name and your name, then select role to join.";
-btnShareScreen.style.display = "none";
-btnCloseSession.style.display = "none";
-studentCountDiv.style.display = "none";
-studentsListContainer.style.display = "none";
-notesArea.classList.add("hidden");
-editorFrame.classList.remove("hidden");
-displayName.style.display = "none";
-displayRoom.style.display = "none";
+document.addEventListener("DOMContentLoaded", () => {
+  status.textContent = "Enter room name and your name, then select role to join.";
+  btnShareScreen.style.display = "none";
+  btnCloseSession.style.display = "none";
+  studentCountDiv.style.display = "none";
+  studentsListContainer.style.display = "none";
+  notesArea.classList.add("hidden");
+  editorFrame.classList.remove("hidden");
+  displayName.style.display = "none";
+  displayRoom.style.display = "none";
+});
