@@ -21,7 +21,7 @@ body, html {
   height: 90vh;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -32,8 +32,6 @@ header {
   background-color: #2563eb;
   color: white;
   padding: 1rem 2rem;
-  font-weight: 700;
-  font-size: 1.5rem;
   user-select: none;
   display: flex;
   flex-direction: column;
@@ -42,13 +40,35 @@ header {
 }
 
 #appTitle {
+  font-weight: 700;
+  font-size: 1.5rem;
   user-select: none;
 }
 
+#joinedInfo {
+  margin-top: 6px;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  color: #f3f4f6;
+}
+
+#nameContainer,
+#roomContainer {
+  display: none;
+  font-weight: 600;
+}
+
+#nameContainer label,
+#roomContainer label {
+  margin-right: 4px;
+}
+
+#displayName,
 #displayRoom {
-  font-weight: 400;
+  font-weight: 700;
   font-size: 1rem;
-  margin-top: 0.3rem;
   opacity: 0.85;
 }
 
@@ -144,11 +164,11 @@ header {
 #leftPane {
   display: flex;
   flex-direction: column;
-  background: #e0e7ff;
   border-radius: 0.75rem;
   overflow-y: auto;
   color: #1e293b;
   transition: width 0.3s ease;
+  background: #e0e7ff;
 }
 
 /* Teacher: 25% width for student list */
@@ -177,6 +197,7 @@ header {
   font-weight: 700;
   border-bottom: 2px solid #2563eb;
   padding-bottom: 0.25rem;
+  color: #2563eb;
 }
 
 #studentsList {
@@ -208,19 +229,18 @@ header {
   border-radius: 0.75rem;
   overflow: hidden;
   transition: width 0.3s ease;
+  background: #f3f4f6;
 }
 
 /* Teacher: 75% width for notes */
 #main.teacher-role #rightPane {
   width: 75%;
-  background: #f3f4f6;
   padding: 1rem;
 }
 
 /* Student: 50% width for Trinket iframe */
 #main.student-role #rightPane {
   width: 50%;
-  background: #f3f4f6;
   padding: 0;
 }
 
