@@ -77,7 +77,6 @@ function updateUIForRole() {
 
     mainSection.classList.remove("student-role");
     mainSection.classList.add("teacher-role");
-
   } else {
     leftPane.classList.remove("teacher-no-video");
     leftPane.classList.add("student-full");
