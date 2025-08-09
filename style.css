@@ -1,4 +1,3 @@
-/* Reset */
 * {
   box-sizing: border-box;
 }
@@ -16,7 +15,6 @@ html, body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  max-width: 100vw;
 }
 
 /* Header */
@@ -28,7 +26,6 @@ header {
   background: #0f172a;
   border-bottom: 1px solid #334155;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  user-select: none;
 }
 
 .header-left h1 {
@@ -48,7 +45,6 @@ header {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.25s ease;
-  user-select: none;
 }
 
 .header-right button:disabled {
@@ -80,7 +76,6 @@ header {
   border-radius: 6px;
   border: none;
   width: 250px;
-  max-width: 100%;
 }
 
 #status {
@@ -93,7 +88,7 @@ header {
 #main {
   flex: 1;
   display: flex;
-  height: calc(100vh - 140px); /* approx height minus header + setup + footer */
+  height: calc(100vh - 140px);
 }
 
 #leftPane, #rightPane {
@@ -111,9 +106,8 @@ header {
 #leftPane video {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* better to avoid cropping */
+  object-fit: cover;
   background: black;
-  border-radius: 10px;
 }
 
 #teacherDisconnected {
@@ -136,7 +130,6 @@ header {
   width: 100%;
   height: 100%;
   border: none;
-  border-radius: 10px;
 }
 
 /* Footer */
@@ -147,7 +140,6 @@ footer {
   background: #0f172a;
   border-top: 1px solid #334155;
   color: #94a3b8;
-  user-select: none;
 }
 
 /* Fullscreen left pane */
@@ -158,29 +150,22 @@ footer {
   width: 100vw !important;
   height: 100vh !important;
   margin: 0 !important;
-  padding: 0 !important;
   border-radius: 0 !important;
   z-index: 9999;
-  background: black;
-  box-shadow: none;
 }
 
 #leftPane.fullscreen video {
-  width: 100vw !important;
-  height: 100vh !important;
-  object-fit: contain !important; /* avoid cropping fullscreen video */
-  border-radius: 0 !important;
+  object-fit: cover;
 }
 
 /* Hide other UI in fullscreen */
 #main.fullscreen #rightPane,
-header,
-#setup,
-footer {
-  display: none !important;
+#main.fullscreen + header,
+#main.fullscreen + #setup,
+#main.fullscreen + footer {
+  display: none;
 }
 
-/* Utility */
 .hidden {
   display: none !important;
 }
