@@ -56,6 +56,18 @@ header {
   background: #2563eb;
 }
 
+/* Student count badge */
+#studentCount {
+  margin-left: 1rem;
+  font-weight: 600;
+  color: #f97316; /* same as status orange */
+  align-self: center;
+  font-size: 1rem;
+  user-select: none;
+  display: none; /* hidden by default, shown only for teacher */
+}
+
+
 /* Setup */
 #setup {
   padding: 1rem 1.5rem;
