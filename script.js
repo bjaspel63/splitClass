@@ -301,6 +301,10 @@ function connectSignaling(room, role, extraPayload = {}) {
           }
         }
         break;
+        
+        case "error":
+  				status.textContent = data.message || "An error occurred.";
+  			break;
 
       case "candidate":
         if (isTeacher) {
