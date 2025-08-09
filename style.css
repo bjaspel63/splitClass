@@ -67,7 +67,6 @@ header {
   display: none; /* hidden by default, shown only for teacher */
 }
 
-
 /* Setup */
 #setup {
   padding: 1rem 1.5rem;
@@ -103,7 +102,8 @@ header {
   height: calc(100vh - 140px);
 }
 
-#leftPane, #rightPane {
+/* Left pane is flex column, split vertically */
+#leftPane {
   flex: 1;
   background: #0f172a;
   margin: 0.75rem;
@@ -115,13 +115,15 @@ header {
   box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
 }
 
+/* Video container takes 2/3 height */
 #leftPane video {
+  flex: 2 1 auto;
   width: 100%;
-  height: 100%;
   object-fit: contain;
   background: black;
 }
 
+/* Teacher disconnected message over video */
 #teacherDisconnected {
   position: absolute;
   top: 50%;
@@ -136,6 +138,62 @@ header {
 
 #teacherDisconnected.visible {
   display: block;
+}
+
+/* Student attendance list container takes 1/3 height */
+#studentsListContainer {
+  flex: 1 1 auto;
+  background: #111827;
+  border-top: 1px solid #334155;
+  padding: 0.5rem 1rem;
+  color: #f97316;
+  font-weight: 600;
+  overflow-y: auto;
+  user-select: none;
+  display: none; /* show only for teacher when students exist */
+}
+
+/* Show container when not hidden */
+#studentsListContainer:not(.hidden) {
+  display: block;
+}
+
+#studentsListContainer h3 {
+  margin: 0 0 0.25rem 0;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #f97316;
+  border-bottom: 1px solid #f97316;
+  padding-bottom: 0.25rem;
+}
+
+#studentCountDisplay {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+#studentsList {
+  margin: 0;
+  padding-left: 1rem;
+  list-style: disc;
+  max-height: 100%;
+  overflow-y: auto;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #fbbf24;
+}
+
+/* Right pane */
+#rightPane {
+  flex: 1;
+  background: #0f172a;
+  margin: 0.75rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
 }
 
 #rightPane iframe {
