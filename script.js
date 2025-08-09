@@ -232,7 +232,7 @@ function connectSignaling(room, role, extraPayload = {}) {
         const roomNameDisplay = document.getElementById("roomNameDisplay");
   				if (roomNameDisplay) {
     			roomNameDisplay.style.display = "block";
-    		roomNameDisplay.textContent = roomName;
+    		roomNameDisplay.textContent = "Room Name:" + roomName;
   			}
 
  
