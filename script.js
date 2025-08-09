@@ -5,7 +5,8 @@ const roomInput = document.getElementById("roomInput");
 const btnTeacher = document.getElementById("btnTeacher");
 const btnStudent = document.getElementById("btnStudent");
 const btnShareScreen = document.getElementById("btnShareScreen");
-const btnCloseSession = document.getElementById("btnCloseSession");
+const btnCloseSessionTeacher = document.getElementById("btnCloseSessionTeacher");
+const btnCloseSessionStudent = document.getElementById("btnCloseSessionStudent");
 const status = document.getElementById("status");
 const setupSection = document.getElementById("setup");
 const mainSection = document.getElementById("main");
@@ -499,7 +500,11 @@ btnShareScreen.addEventListener("click", () => {
   startScreenShare();
 });
 
-btnCloseSession.addEventListener("click", () => {
+btnCloseSessionTeacher.addEventListener("click", () => {
+  closeSession();
+});
+
+btnCloseSessionStudent.addEventListener("click", () => {
   closeSession();
 });
 
