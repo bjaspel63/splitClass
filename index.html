@@ -1,58 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SplitClass App</title>
+</head>
 <body>
   <!-- Main Join Page -->
-  <section id="joinPage">
+  <section id="joinPage" role="main" aria-label="Join SplitClass">
     <h1>SplitClass App</h1>
     <div>
       <label for="studentNameInput">Your Name:</label>
-      <input id="studentNameInput" type="text" />
+      <input id="studentNameInput" type="text" autocomplete="off" placeholder="Enter your name" />
     </div>
     <div>
       <label for="roomInput">Room Name:</label>
-      <input id="roomInput" type="text" />
+      <input id="roomInput" type="text" autocomplete="off" placeholder="Enter room name" />
     </div>
     <div>
-      <button id="btnTeacher">Join as Teacher</button>
-      <button id="btnStudent">Join as Student</button>
+      <button id="btnTeacher" type="button">Join as Teacher</button>
+      <button id="btnStudent" type="button">Join as Student</button>
     </div>
-    <p id="status"></p>
+    <p id="status" aria-live="polite"></p>
   </section>
 
   <!-- Room Page -->
-  <section id="roomPage" style="display:none; height: 100vh; flex-direction: column;">
-    <header id="roomHeader" style="display:flex; justify-content: space-between; align-items:center; padding: 0.75rem 1.5rem; background:#0f172a; color:#f1f5f9;">
+  <section id="roomPage" role="main" aria-label="SplitClass Room" style="display:none;">
+    <header>
       <div>
-        <h1 style="margin:0;">SplitClass App</h1>
-        <p id="headerRoomName" style="margin:0; font-weight:bold;"></p>
+        <h1>SplitClass App</h1>
+        <p id="headerRoomName" aria-live="polite"></p>
       </div>
-      <div id="teacherButtons" style="display:none; gap: 0.5rem;">
-        <button id="btnShareScreen">Share Screen</button>
-        <button id="btnDownloadNotes">Download Notes</button>
-        <button id="btnCloseSession">Close</button>
+      <div id="teacherButtons" style="display:none;">
+        <button id="btnShareScreen" type="button">Share Screen</button>
+        <button id="btnDownloadNotes" type="button">Download Notes</button>
+        <button id="btnCloseSession" type="button">Close</button>
       </div>
       <div id="studentButtons" style="display:none;">
-        <button id="btnCloseSessionStudent">Close</button>
+        <button id="btnCloseSessionStudent" type="button">Close</button>
       </div>
     </header>
 
-    <main id="roomMain" style="display:flex; flex:1; height: calc(100vh - 60px);">
-      <!-- Teacher layout: left student list 25%, right notes 75% -->
-      <aside id="teacherLeftPane" style="display:none; width: 25%; background:#0f172a; color:#fbbf24; overflow-y:auto; padding:1rem;">
+    <main id="roomMain">
+      <!-- Teacher layout panes -->
+      <aside id="teacherLeftPane" aria-label="Student List" style="display:none;">
         <h2>Students</h2>
-        <ul id="studentsList" style="list-style:none; padding-left:0; margin-top:0;"></ul>
+        <ul id="studentsList"></ul>
       </aside>
-
-      <section id="teacherRightPane" style="display:none; width: 75%; background:#1e293b; color:#f1f5f9; padding:1rem; display:flex; flex-direction: column;">
-        <textarea id="notesArea" style="flex:1; background:#0f172a; color:#f1f5f9; border:none; border-radius:6px; padding:1rem; resize:none;" placeholder="Enter notes here..."></textarea>
+      <section id="teacherRightPane" style="display:none;">
+        <textarea id="notesArea" placeholder="Enter notes here..."></textarea>
       </section>
 
-      <!-- Student layout: left video 50%, right editor 50% -->
-      <section id="studentLeftPane" style="display:none; width: 50%; background:#000;">
-        <video id="video" autoplay playsinline style="width: 100%; height: 100%; object-fit: contain; background:black;"></video>
+      <!-- Student layout panes -->
+      <section id="studentLeftPane" style="display:none;">
+        <video id="video" autoplay playsinline muted></video>
       </section>
-
-      <section id="studentRightPane" style="display:none; width: 50%;">
-        <iframe id="editorFrame" src="https://trinket.io/embed/python3" style="width: 100%; height: 100%; border:none; border-radius: 8px;"></iframe>
+      <section id="studentRightPane" style="display:none;">
+        <iframe
+          id="editorFrame"
+          src="https://trinket.io/embed/python3"
+          title="Code Editor"
+          frameborder="0"
+          allowfullscreen
+          style="width:100%; height:100%; border:none;"
+        ></iframe>
       </section>
     </main>
   </section>
 </body>
+</html>
