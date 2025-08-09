@@ -10,9 +10,7 @@
   <div id="app">
     <!-- Header (common) -->
     <header>
-      <div id="appTitle" class="app-title">
-        SplitClass + Trinket
-      </div>
+      <!-- Removed appTitle here as requested -->
 
       <!-- Display joined info with labels -->
       <div id="joinedInfo" class="joined-info" role="region" aria-live="polite">
@@ -39,6 +37,8 @@
       <div class="input-group">
         <label for="roomInput">Room Name</label>
         <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
+        <!-- Room name display below input -->
+        <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: #333;"></div>
       </div>
 
       <div class="buttons">
