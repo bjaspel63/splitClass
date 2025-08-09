@@ -10,7 +10,7 @@
   <div id="app">
     <!-- Header (common) -->
     <header>
-    <!-- Room name display below input -->
+      <!-- Room name display below input -->
       <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: white;"></div>
       <!-- Display joined info with labels -->
       <div id="joinedInfo" class="joined-info" role="region" aria-live="polite">
@@ -37,7 +37,6 @@
       <div class="input-group">
         <label for="roomInput">Room Name</label>
         <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
-        
       </div>
 
       <div class="buttons">
@@ -51,9 +50,7 @@
     <!-- Main Section (Teacher or Student view) -->
     <section id="main" class="hidden" role="main" aria-label="Classroom">
       <!-- Left Pane (Teacher: 25% student list, Student: 50% video) -->
-      
       <div id="leftPane">
-        
         <!-- Teacher student list -->
         <div id="studentsListContainer" class="hidden" aria-label="Students attending">
           <h2>Students Attending (<span id="studentCountDisplay">0</span>)</h2>
@@ -64,7 +61,7 @@
         <video id="video" autoplay playsinline muted class="hidden"></video>
       </div>
 
-      <!-- Right Pane (Teacher notes 75%, Student Trinket iframe 50%) -->
+      <!-- Right Pane (Teacher notes 75%, Student Trinket iframe 50%, PDF viewer) -->
       <div id="rightPane">
         <!-- Teacher notes -->
         <textarea id="notesArea" placeholder="Type notes here..." class="hidden" aria-label="Teacher notes"></textarea>
@@ -78,6 +75,11 @@
           class="hidden"
           title="Python coding environment"
         ></iframe>
+
+        <!-- PDF Viewer container moved inside rightPane -->
+        <div id="pdfViewerContainer" class="hidden" style="margin-top: 1rem; height: 500px;">
+          <embed id="pdfViewer" type="application/pdf" width="100%" height="100%" />
+        </div>
       </div>
     </section>
 
@@ -87,14 +89,9 @@
       <button id="btnShareScreen" type="button">Share Screen</button>
       <button id="btnCloseSessionTeacher" type="button">Close Session</button>
       
-      <!-- Inside #teacherControls (alongside buttons) -->
-		<input type="file" id="pdfUpload" accept="application/pdf" style="margin-left: 1rem;" />
-		<button id="btnClearPdf" type="button" style="display:none; margin-left: 0.5rem;">Clear PDF</button>
-
-<!-- Inside #rightPane (under notesArea) -->
-		<div id="pdfViewerContainer" class="hidden" style="margin-top: 1rem;">
-  	<embed id="pdfViewer" type="application/pdf" width="100%" height="500px" />
-		</div>
+      <!-- PDF Upload and Clear PDF buttons -->
+      <input type="file" id="pdfUpload" accept="application/pdf" style="margin-left: 1rem;" />
+      <button id="btnClearPdf" type="button" style="display:none; margin-left: 0.5rem;">Clear PDF</button>
     </div>
 
     <!-- Controls for Student -->
