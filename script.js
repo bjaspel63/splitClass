@@ -70,21 +70,6 @@ function updateStudentCount() {
 
 function updateUIForRole() {
   if (isTeacher) {
-    
-    pdfUploadInput.style.display = "inline-block";
-  if (pdfViewer.src) {
-    pdfViewerContainer.classList.remove("hidden");
-    btnClearPdf.style.display = "inline-block";
-  } else {
-    pdfViewerContainer.classList.add("hidden");
-    btnClearPdf.style.display = "none";
-  } 
-  }else {
-  // Hide for students
-  pdfUploadInput.style.display = "none";
-  pdfViewerContainer.classList.add("hidden");
-  btnClearPdf.style.display = "none";
-}}
 
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
@@ -628,31 +613,6 @@ const btnDownloadNotes = document.getElementById("btnDownloadNotes");
 if (btnDownloadNotes) {
   btnDownloadNotes.addEventListener("click", downloadNotes);
 }
-
-const pdfUploadInput = document.getElementById("pdfUpload");
-const pdfViewerContainer = document.getElementById("pdfViewerContainer");
-const pdfViewer = document.getElementById("pdfViewer");
-const btnClearPdf = document.getElementById("btnClearPdf");
-
-pdfUploadInput.addEventListener("change", (event) => {
-  const file = event.target.files[0];
-  if (file && file.type === "application/pdf") {
-    const fileURL = URL.createObjectURL(file);
-    pdfViewer.src = fileURL;
-    pdfViewerContainer.classList.remove("hidden");
-    btnClearPdf.style.display = "inline-block";
-  } else {
-    alert("Please upload a valid PDF file.");
-    event.target.value = ""; // reset input
-  }
-});
-
-btnClearPdf.addEventListener("click", () => {
-  pdfViewer.src = "";
-  pdfViewerContainer.classList.add("hidden");
-  btnClearPdf.style.display = "none";
-  pdfUploadInput.value = "";
-});
 
 /* --- Init --- */
 
