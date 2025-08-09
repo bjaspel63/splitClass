@@ -1,7 +1,4 @@
 // script.js -- multi-student-ready client
-// Handles teacher broadcasting screen share to multiple students
-// and students receiving the stream via WebRTC signaling.
-
 const signalingUrl = "wss://splitclass-production.up.railway.app";
 
 const video = document.getElementById("video");
@@ -281,7 +278,7 @@ function updateUIForRole() {
     btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
     btnShareScreen.style.display = "inline-block";
-    btnShareScreen.disabled = true; // enabled after join
+    btnShareScreen.disabled = true;
     btnCloseSession.style.display = "inline-block";
   } else {
     btnStudent.style.display = "none";
@@ -296,6 +293,7 @@ function resetToSetup() {
   if (ws) { try { ws.close(); } catch {} ws = null; }
 
   if (studentPc) { try { studentPc.close(); } catch {} studentPc = null; }
+
   Object.keys(teacherPeers).forEach(k => { if (teacherPeers[k]) try { teacherPeers[k].close(); } catch{} teacherPeers[k] = null; });
 
   if (screenStream) { screenStream.getTracks().forEach(t => t.stop()); screenStream = null; }
@@ -348,5 +346,3 @@ btnShareScreen.onclick = () => {
 btnCloseSession.onclick = () => {
   resetToSetup();
 };
-
-/* --------------------- End --------------------- */
