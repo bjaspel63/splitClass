@@ -10,10 +10,7 @@
   <div id="app">
     <!-- Header (common) -->
     <header>
-      <h1> Splitclass + Trinket </h1>
-      <!-- Room name display below input -->
-      <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: white;"></div>
-
+    
       <!-- Display joined info with labels -->
       <div id="joinedInfo" class="joined-info" role="region" aria-live="polite">
         <div id="nameContainer" class="hidden">
@@ -55,6 +52,8 @@
       <!-- Left Pane (Teacher: 25% student list, Student: 50% video) -->
       
       <div id="leftPane">
+        <!-- Room name display below input -->
+      <div id="roomNameDisplay" style="margin-top: 6px; font-weight: bold; color: white;"></div>
         <!-- Teacher student list -->
         <div id="studentsListContainer" class="hidden" aria-label="Students attending">
           <h2>Students Attending (<span id="studentCountDisplay">0</span>)</h2>
