@@ -50,13 +50,15 @@ function connectSignaling(room, role) {
       if (role === "teacher") {
         btnShareScreen.disabled = false;
       }
-      // For student, hide setup and show main if video already assigned (in case)
       if (role === "student") {
         setupSection.classList.add("hidden");
         mainSection.classList.remove("hidden");
       }
     } else if (data.type === "new-student" && role === "teacher") {
-      await createOfferToStudents();
+      // On new student, if sharing, resend offer
+      if (isSharing) {
+        await createOfferToStudents();
+      }
     } else if (data.type === "offer" && role === "student") {
       await handleOffer(data.payload);
     } else if (data.type === "answer" && role === "teacher") {
@@ -73,10 +75,14 @@ function connectSignaling(room, role) {
       teacherDisconnected.classList.remove("hidden");
       teacherDisconnected.classList.add("visible");
       btnShareScreen.disabled = true;
-      // For student: hide main and show setup or a message
       if (!isTeacher) {
         mainSection.classList.add("hidden");
         setupSection.classList.remove("hidden");
+        video.srcObject = null;
+        if (pc) {
+          pc.close();
+          pc = null;
+        }
       }
     }
   };
@@ -95,16 +101,24 @@ function connectSignaling(room, role) {
 
 async function createOfferToStudents() {
   if (!pc) return;
-  const offer = await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  sendSignal({ type: "offer", room: roomName, payload: offer });
+  try {
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    sendSignal({ type: "offer", room: roomName, payload: offer });
+  } catch (err) {
+    console.error("Error creating offer:", err);
+  }
 }
 
 async function handleOffer(offer) {
+  if (pc) {
+    pc.close();
+    pc = null;
+  }
+
   pc = new RTCPeerConnection(rtcConfig);
 
   pc.ontrack = (event) => {
-    // IMPORTANT: Assign stream only once
     if (video.srcObject !== event.streams[0]) {
       video.srcObject = event.streams[0];
     }
@@ -120,15 +134,23 @@ async function handleOffer(offer) {
     }
   };
 
-  await pc.setRemoteDescription(new RTCSessionDescription(offer));
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-  sendSignal({ type: "answer", room: roomName, payload: answer });
+  try {
+    await pc.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    sendSignal({ type: "answer", room: roomName, payload: answer });
+  } catch (err) {
+    console.error("Error handling offer:", err);
+  }
 }
 
 async function handleAnswer(answer) {
   if (!pc) return;
-  await pc.setRemoteDescription(new RTCSessionDescription(answer));
+  try {
+    await pc.setRemoteDescription(new RTCSessionDescription(answer));
+  } catch (err) {
+    console.error("Error handling answer:", err);
+  }
 }
 
 async function startSharing() {
@@ -202,7 +224,7 @@ function updateUIForRole() {
     btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
     btnShareScreen.style.display = "inline-block";
-    btnShareScreen.disabled = true; // Will enable after signaling join
+    btnShareScreen.disabled = true; // enabled after join
     btnCloseSession.style.display = "inline-block";
   } else {
     btnStudent.style.display = "none";
