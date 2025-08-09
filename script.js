@@ -45,20 +45,20 @@ const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
 function updateStudentCount() {
   if (!isTeacher) return;
+
   const count = Object.keys(teacherPeers).length;
-  console.log("Updating student count:", count, teacherPeers);
   studentCountDisplay.textContent = count;
 
   studentsList.innerHTML = "";
   if (count > 0) {
-    studentsListContainer.style.display = "flex"; // use flex here
+    studentsListContainer.classList.remove("hidden"); // Show container
     for (const info of Object.values(teacherPeers)) {
       const li = document.createElement("li");
       li.textContent = info.name || "Anonymous";
       studentsList.appendChild(li);
     }
   } else {
-    studentsListContainer.style.display = "flex"; // ensure visible
+    studentsListContainer.classList.remove("hidden"); // Show container
     const li = document.createElement("li");
     li.innerHTML = "<em>No students yet</em>";
     studentsList.appendChild(li);
@@ -69,8 +69,10 @@ function updateUIForRole() {
   if (isTeacher) {
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
-    studentsListContainer.style.display = "flex"; // force visible on teacher
-    video.style.display = "none";
+
+    // Show student list container and hide video
+    studentsListContainer.classList.remove("hidden");
+    video.classList.add("hidden");
 
     notesArea.classList.remove("hidden");
     editorFrame.classList.add("hidden");
@@ -85,8 +87,9 @@ function updateUIForRole() {
   } else {
     leftPane.classList.remove("teacher-no-video");
     leftPane.classList.add("student-full");
-    video.style.display = "block";
-    studentsListContainer.style.display = "none";
+
+    video.classList.remove("hidden");
+    studentsListContainer.classList.add("hidden");
 
     notesArea.classList.add("hidden");
     editorFrame.classList.remove("hidden");
@@ -103,19 +106,19 @@ function updateUIForRole() {
 
 function showJoinedInfo() {
   // Hide inputs and their labels on join
-  studentNameInput.style.display = "none";
-  studentNameInput.previousElementSibling.style.display = "none";
-  roomInput.style.display = "none";
-  roomInput.previousElementSibling.style.display = "none";
+  studentNameInput.classList.add("hidden");
+  studentNameInput.previousElementSibling.classList.add("hidden");
+  roomInput.classList.add("hidden");
+  roomInput.previousElementSibling.classList.add("hidden");
 
   if (isTeacher) {
-    nameContainer.style.display = "none"; // teachers don't show name container
-    roomContainer.style.display = "flex"; // show room container
+    nameContainer.classList.add("hidden"); // teachers don't show name container
+    roomContainer.classList.remove("hidden"); // show room container
     displayRoom.textContent = roomName;
   } else {
-    nameContainer.style.display = "flex"; // show name container
+    nameContainer.classList.remove("hidden"); // show name container
     displayName.textContent = studentName;
-    roomContainer.style.display = "flex"; // show room container
+    roomContainer.classList.remove("hidden"); // show room container
     displayRoom.textContent = roomName;
   }
 }
@@ -173,8 +176,8 @@ function connectSignaling(room, role, extraPayload = {}) {
         roomName = room;
         studentName = extraPayload.name || "Anonymous";
 
-        btnTeacher.style.display = "none";
-        btnStudent.style.display = "none";
+        btnTeacher.classList.add("hidden");
+        btnStudent.classList.add("hidden");
 
         setupSection.classList.add("hidden");
         mainSection.classList.remove("hidden");
@@ -443,7 +446,7 @@ function closeSession() {
   btnShareScreen.style.display = "none";
   btnShareScreen.disabled = true;
 
-  studentsListContainer.style.display = "none";
+  studentsListContainer.classList.add("hidden");
   studentCountDisplay.textContent = "0";
 
   for (const key in teacherPeers) delete teacherPeers[key];
@@ -455,19 +458,19 @@ function closeSession() {
   studentsList.innerHTML = "";
   notesArea.value = "";
 
-  studentNameInput.style.display = "block";
-  studentNameInput.previousElementSibling.style.display = "block";
-  roomInput.style.display = "block";
-  roomInput.previousElementSibling.style.display = "block";
+  studentNameInput.classList.remove("hidden");
+  studentNameInput.previousElementSibling.classList.remove("hidden");
+  roomInput.classList.remove("hidden");
+  roomInput.previousElementSibling.classList.remove("hidden");
 
-  nameContainer.style.display = "none";
-  roomContainer.style.display = "none";
+  nameContainer.classList.add("hidden");
+  roomContainer.classList.add("hidden");
 
   displayName.textContent = "";
   displayRoom.textContent = "";
 
-  btnTeacher.style.display = "inline-block";
-  btnStudent.style.display = "inline-block";
+  btnTeacher.classList.remove("hidden");
+  btnStudent.classList.remove("hidden");
 }
 
 /* --- Event listeners --- */
@@ -523,12 +526,12 @@ document.addEventListener("DOMContentLoaded", () => {
   btnShareScreen.style.display = "none";
   teacherControls.classList.add("hidden");
   studentControls.classList.add("hidden");
-  studentsListContainer.style.display = "none";
+  studentsListContainer.classList.add("hidden");
   notesArea.classList.add("hidden");
   editorFrame.classList.remove("hidden");
-  nameContainer.style.display = "none";
-  roomContainer.style.display = "none";
+  nameContainer.classList.add("hidden");
+  roomContainer.classList.add("hidden");
 
-  btnTeacher.style.display = "inline-block";
-  btnStudent.style.display = "inline-block";
+  btnTeacher.classList.remove("hidden");
+  btnStudent.classList.remove("hidden");
 });
