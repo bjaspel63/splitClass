@@ -24,13 +24,15 @@
     </header>
 
     <section id="setup" aria-label="Setup section">
-      <div id="studentNameContainer" style="margin-bottom: 1rem;">
-        <label for="studentNameInput">Your Name:</label>
+      <div id="studentNameContainer" class="input-group">
         <input id="studentNameInput" type="text" placeholder="Enter your name" autocomplete="name" />
+        <label for="studentNameInput">Your Name:</label>
       </div>
 
-      <label for="roomInput">Room Name:</label>
-      <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
+      <div id="roomInputContainer" class="input-group">
+        <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
+        <label for="roomInput">Room Name:</label>
+      </div>
 
       <p id="status" role="status" style="margin-top: 0.5rem; color: #f97316;"></p>
     </section>
@@ -39,7 +41,7 @@
       <div id="leftPane" aria-live="polite">
         <video id="video" autoplay playsinline muted style="width: 100%; max-height: 300px; background: black;" aria-label="Screen share video"></video>
 
-        <div id="studentsListContainer" class="hidden" style="margin-top: 1rem;">
+        <div id="studentsListContainer" style="margin-top: 1rem;">
           <h3>Students Attending (<span id="studentCountDisplay">0</span>)</h3>
           <ul id="studentsList" style="list-style-type: none; padding-left: 0;"></ul>
         </div>
@@ -49,7 +51,7 @@
         </p>
       </div>
 
-      <div id="rightPane" style="margin-top: 1rem;">
+      <div id="rightPane">
         <iframe
           id="editorFrame"
           src="https://trinket.io/embed/python/3d8d7ce66b"
