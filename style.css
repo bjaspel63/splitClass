@@ -1,348 +1,289 @@
+/* Reset */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-html, body {
-  margin: 0;
+body, html {
   height: 100%;
-  background: #1e293b;
-  font-family: system-ui, sans-serif;
-  color: #f1f5f9;
-  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9fafb;
+  color: #1e293b;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #app {
+  width: 90vw;
+  max-width: 1200px;
+  height: 90vh;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  overflow: hidden;
 }
 
 /* Header */
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1.5rem;
-  background: #0f172a;
-  border-bottom: 1px solid #334155;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.header-left h1 {
-  margin: 0;
-  font-weight: 700;
-  font-size: 1.8rem;
-  color: #3b82f6;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.header-right button {
-  background: #3b82f6;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  background-color: #2563eb;
   color: white;
+  padding: 1rem 2rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+  user-select: none;
+}
+
+#roomDisplay {
+  font-weight: 400;
+  font-size: 1rem;
+  margin-top: 0.3rem;
+  opacity: 0.85;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Setup Page */
+#setup {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+#setup h1 {
+  font-size: 2.5rem;
+  color: #2563eb;
+}
+
+.input-group {
+  width: 320px;
+  text-align: left;
+}
+
+.input-group label {
   font-weight: 600;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  transition: border-color 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  width: 320px;
+}
+
+.buttons button {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
+  font-weight: 600;
+  color: white;
+  background: #2563eb;
   transition: background-color 0.25s ease;
 }
 
-.header-right button:disabled {
-  background: #64748b;
-  cursor: not-allowed;
+.buttons button:hover {
+  background: #1e40af;
 }
 
-.header-right button:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-/* Student count badge */
-#studentCount {
+.status-text {
+  color: #dc2626; /* red for errors */
   font-weight: 600;
-  color: #f97316;
-  user-select: none;
-  display: none;
-  font-size: 1rem;
+  height: 1.25rem; /* reserve space */
 }
 
-/* Setup section */
-#setup {
-  padding: 1rem 1.5rem;
-  background: #0f172a;
-  border-bottom: 1px solid #334155;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-start;
-  max-width: 650px;
-  margin: 1rem auto;
-}
-
-#setup > div {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 250px;
-  gap: 0.5rem;
-}
-
-#setup label {
-  font-weight: 600;
-}
-
-#studentNameInput,
-#roomInput {
-  padding: 0.4rem 0.6rem;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: none;
-  width: 100%;
-  background: #1e293b;
-  color: #f1f5f9;
-}
-
-#status {
-  font-weight: 600;
-  color: #f97316;
-  margin-top: 0.5rem;
-  width: 100%;
-  flex-basis: 100%;
-}
-
-/* Main split view */
-#main {
+/* Teacher View */
+#teacherView {
   flex: 1;
   display: flex;
-  height: calc(100vh - 140px);
-  gap: 1rem;
-  padding: 0 1rem 1rem 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  flex-direction: column;
 }
 
-/* Layout for teacher: left 25%, right 75% */
-#main.teacher-wide-notes #leftPane {
-  flex: 0 0 25%;
-  max-width: 25%;
-}
-
-#main.teacher-wide-notes #rightPane {
-  flex: 1 1 75%;
-  max-width: 75%;
-}
-
-/* Layout for student: equal 50%-50% */
-#main.student-equal-sides #leftPane,
-#main.student-equal-sides #rightPane {
-  flex: 1 1 50%;
-  max-width: 50%;
-}
-
-/* Left Pane */
-#leftPane {
-  background: #0f172a;
-  border-radius: 10px;
-  box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
+.container {
+  flex: 1;
+  display: flex;
+  height: 100%;
   overflow: hidden;
-  position: relative;
+  gap: 1rem;
+}
+
+#teacherLeftPane {
+  width: 25%;
+  background: #e0e7ff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-y: auto;
+  color: #1e293b;
+}
+
+#teacherLeftPane h2 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-bottom: 2px solid #2563eb;
+  padding-bottom: 0.25rem;
+}
+
+#studentsList {
+  list-style: none;
+  max-height: 100%;
+  overflow-y: auto;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+#studentsList li {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid #c7d2fe;
+}
+
+#teacherRightPane {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  /* Default for student: equal flex 1 */
-  flex: 1;
-}
-
-/* Teacher left pane: attendance only */
-#leftPane.teacher-no-video video {
-  display: none;
-}
-
-#leftPane.teacher-no-video #studentsListContainer {
-  display: block;
   padding: 1rem;
-  flex-grow: 1;
-  overflow-y: auto;
+  background: #f3f4f6;
+  border-radius: 0.5rem;
 }
 
-#leftPane.teacher-no-video #teacherDisconnected {
-  display: none;
+#teacherNotes {
+  flex: 1;
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1.5px solid #cbd5e1;
+  resize: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #1e293b;
 }
 
-/* Student left pane: full video */
-#leftPane.student-full video {
+.teacherControls {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.teacherControls button {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #2563eb;
+  color: white;
+  transition: background-color 0.25s ease;
+}
+
+.teacherControls button:hover {
+  background: #1e40af;
+}
+
+/* Student View */
+#studentView {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.studentContainer {
+  flex: 1;
+  display: flex;
+  height: 100%;
+  gap: 1rem;
+}
+
+#studentLeftPane,
+#studentRightPane {
+  flex: 1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#studentLeftPane video {
   width: 100%;
   height: 100%;
   object-fit: contain;
   background: black;
+  border-radius: 0.5rem;
 }
 
-/* Students list */
-#studentsList {
-  list-style: none;
-  padding-left: 0;
-  margin: 0;
-  max-height: 100%;
-  overflow-y: auto;
-  color: #fbbf24;
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-/* Right Pane */
-#rightPane {
-  background: #0f172a;
-  border-radius: 10px;
-  box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  /* Default for student: equal flex 1 */
-  flex: 1;
-}
-
-/* Hide Trinket for teacher */
-#rightPane #editorFrame.hidden {
-  display: none;
-}
-
-/* Hide notes for student */
-#rightPane #notesArea.hidden {
-  display: none;
-}
-
-/* iframe and textarea fill rightPane */
-#rightPane iframe,
-#rightPane textarea {
+#studentRightPane iframe {
   width: 100%;
   height: 100%;
   border: none;
-  background: #0f172a;
-  color: #f1f5f9;
-  font-family: monospace, monospace;
-  font-size: 1rem;
-  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.studentControls {
+  padding: 1rem 2rem;
+  text-align: right;
+}
+
+.studentControls button {
+  padding: 0.6rem 1.2rem;
   border-radius: 8px;
-  resize: none;
-}
-
-body, html {
-  margin: 0; padding: 0; height: 100%;
-  font-family: system-ui, sans-serif;
-  background: #1e293b;
-  color: #f1f5f9;
-}
-
-#joinPage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  gap: 1rem;
-}
-
-#joinPage input {
-  padding: 0.5rem;
-  border-radius: 6px;
   border: none;
-  width: 200px;
-}
-
-#joinPage button {
-  margin: 0 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  background: #3b82f6;
-  color: white;
   font-weight: 600;
-}
-
-#joinPage button:hover {
-  background: #2563eb;
-}
-
-#status {
-  height: 1.5rem;
-  color: #f97316;
-}
-
-#roomPage header button {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: none;
   cursor: pointer;
-  font-weight: 600;
-}
-
-#btnShareScreen {
-  background: #3b82f6;
+  background: #dc2626;
   color: white;
+  transition: background-color 0.25s ease;
 }
 
-#btnShareScreen:hover {
-  background: #2563eb;
+.studentControls button:hover {
+  background: #b91c1c;
 }
 
-#btnDownloadNotes {
-  background: #f97316;
-  color: white;
-}
-
-#btnDownloadNotes:hover {
-  background: #ea580c;
-}
-
-#btnCloseSession, #btnCloseSessionStudent {
-  background: #64748b;
-  color: white;
-}
-
-#btnCloseSession:hover, #btnCloseSessionStudent:hover {
-  background: #475569;
-}
-
-
-/* Footer */
-footer {
-  text-align: center;
-  padding: 0.75rem;
-  font-size: 0.9rem;
-  background: #0f172a;
-  border-top: 1px solid #334155;
-  color: #94a3b8;
-}
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  #setup {
+/* Responsive */
+@media (max-width: 900px) {
+  .container,
+  .studentContainer {
     flex-direction: column;
-    padding: 1rem;
   }
-  #setup > div {
-    max-width: 100% !important;
+
+  #teacherLeftPane,
+  #studentLeftPane,
+  #studentRightPane {
+    width: 100% !important;
+    height: 40vh;
   }
-  #main {
-    flex-direction: column;
-    padding: 1rem;
-  }
-  #leftPane.student-full,
-  #rightPane {
-    flex: unset;
-    width: 100%;
+
+  #teacherRightPane {
     height: 50vh;
-  }
-  /* Inputs labels on top for mobile, inputs full width */
-  #setup label {
-    display: block;
-  }
-  #studentNameInput,
-  #roomInput {
-    width: 100%;
   }
 }
