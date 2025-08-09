@@ -1,178 +1,97 @@
-// script.js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SplitClass + Trinket</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Header (common) -->
+    <header>
+      <div id="appTitle" style="font-weight: bold; font-size: 1.5rem; user-select:none;">
+        SplitClass + Trinket
+      </div>
 
-// Elements
-const setupSection = document.getElementById("setup");
-const mainSection = document.getElementById("main");
+      <!-- Display joined info with labels -->
+      <div id="joinedInfo" style="margin-top: 6px; display: flex; gap: 1.5rem; justify-content: center; align-items: center;">
+        <div id="nameContainer" style="display: none;">
+          <label for="displayName" style="font-weight: 600;">Your Name:</label>
+          <span id="displayName" style="font-weight: bold; margin-left: 4px;"></span>
+        </div>
+        <div id="roomContainer" style="display: none;">
+          <label for="displayRoom" style="font-weight: 600;">Room Name:</label>
+          <span id="displayRoom" style="font-weight: bold; margin-left: 4px;"></span>
+        </div>
+      </div>
+    </header>
 
-const btnTeacher = document.getElementById("btnTeacher");
-const btnStudent = document.getElementById("btnStudent");
+    <!-- Setup Section -->
+    <section id="setup">
+      <h1>Welcome to SplitClass</h1>
 
-const nameInput = document.getElementById("studentNameInput");
-const roomInput = document.getElementById("roomInput");
+      <div class="input-group">
+        <label for="studentNameInput">Your Name</label>
+        <input id="studentNameInput" type="text" placeholder="Enter your name" autocomplete="off" />
+      </div>
 
-const displayNameEl = document.getElementById("displayName");
-const displayRoomEl = document.getElementById("displayRoom");
+      <div class="input-group">
+        <label for="roomInput">Room Name</label>
+        <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
+      </div>
 
-const nameContainer = document.getElementById("nameContainer");
-const roomContainer = document.getElementById("roomContainer");
+      <div class="buttons">
+        <button id="btnTeacher">Start as Teacher</button>
+        <button id="btnStudent">Join as Student</button>
+      </div>
 
-const studentsListContainer = document.getElementById("studentsListContainer");
-const studentsList = document.getElementById("studentsList");
-const studentCountDisplay = document.getElementById("studentCountDisplay");
+      <p id="status" class="status-text"></p>
+    </section>
 
-const videoEl = document.getElementById("video");
-const notesArea = document.getElementById("notesArea");
-const editorFrame = document.getElementById("editorFrame");
+    <!-- Main Section (Teacher or Student view) -->
+    <section id="main" class="hidden">
+      <!-- Left Pane (Teacher: 25% student list, Student: 50% video) -->
+      <div id="leftPane">
+        <!-- Teacher student list -->
+        <div id="studentsListContainer" class="hidden">
+          <h2>Students Attending (<span id="studentCountDisplay">0</span>)</h2>
+          <ul id="studentsList"></ul>
+        </div>
 
-const teacherControls = document.getElementById("teacherControls");
-const studentControls = document.getElementById("studentControls");
+        <!-- Student video for student role -->
+        <video id="video" autoplay playsinline muted style="display:none;"></video>
+      </div>
 
-const btnDownloadNotes = document.getElementById("btnDownloadNotes");
-const btnShareScreen = document.getElementById("btnShareScreen");
-const btnCloseTeacher = document.getElementById("btnCloseSessionTeacher");
-const btnCloseStudent = document.getElementById("btnCloseSessionStudent");
+      <!-- Right Pane (Teacher notes 75%, Student Trinket iframe 50%) -->
+      <div id="rightPane">
+        <!-- Teacher notes -->
+        <textarea id="notesArea" placeholder="Type notes here..." class="hidden"></textarea>
 
-const leftPane = document.getElementById("leftPane");
-const rightPane = document.getElementById("rightPane");
+        <!-- Trinket iframe for student -->
+        <iframe
+          id="editorFrame"
+          src="https://trinket.io/embed/python/3d8d7ce66b"
+          allowfullscreen
+          frameborder="0"
+          class="hidden"
+        ></iframe>
+      </div>
+    </section>
 
-let currentRole = null;
+    <!-- Controls for Teacher -->
+    <div id="teacherControls" class="hidden" style="margin-top: 10px; display: flex; gap: 10px;">
+      <button id="btnDownloadNotes">Download Notes</button>
+      <button id="btnShareScreen">Share Screen</button>
+      <button id="btnCloseSessionTeacher">Close Session</button>
+    </div>
 
-// ===== Helper Functions =====
-function showTeacherView() {
-  currentRole = "teacher";
+    <!-- Controls for Student -->
+    <div id="studentControls" class="hidden" style="margin-top: 10px;">
+      <button id="btnCloseSessionStudent">Close Session</button>
+    </div>
+  </div>
 
-  // Layout: Teacher → Left 25%, Right 75%
-  leftPane.style.width = "25%";
-  rightPane.style.width = "75%";
-
-  studentsListContainer.classList.remove("hidden");
-  notesArea.classList.remove("hidden");
-  videoEl.style.display = "none";
-  editorFrame.classList.add("hidden");
-
-  teacherControls.classList.remove("hidden");
-  studentControls.classList.add("hidden");
-
-  // Mock students attending
-  studentsList.innerHTML = "";
-  const mockStudents = ["Alice", "Bob", "Charlie"];
-  mockStudents.forEach(name => {
-    const li = document.createElement("li");
-    li.textContent = name;
-    studentsList.appendChild(li);
-  });
-  studentCountDisplay.textContent = mockStudents.length;
-}
-
-function showStudentView() {
-  currentRole = "student";
-
-  // Layout: Student → Left 50%, Right 50%
-  leftPane.style.width = "50%";
-  rightPane.style.width = "50%";
-
-  studentsListContainer.classList.add("hidden");
-  notesArea.classList.add("hidden");
-  editorFrame.classList.remove("hidden");
-  videoEl.style.display = "block";
-
-  teacherControls.classList.add("hidden");
-  studentControls.classList.remove("hidden");
-
-  // Start webcam
-  navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    .then(stream => {
-      videoEl.srcObject = stream;
-    })
-    .catch(err => {
-      console.error("Error accessing webcam:", err);
-    });
-}
-
-function resetUI() {
-  currentRole = null;
-
-  setupSection.classList.remove("hidden");
-  mainSection.classList.add("hidden");
-  teacherControls.classList.add("hidden");
-  studentControls.classList.add("hidden");
-
-  nameContainer.style.display = "none";
-  roomContainer.style.display = "none";
-
-  notesArea.value = "";
-  studentsList.innerHTML = "";
-  studentCountDisplay.textContent = "0";
-}
-
-// ===== Event Listeners =====
-btnTeacher.addEventListener("click", () => {
-  const name = nameInput.value.trim();
-  const room = roomInput.value.trim();
-
-  if (!name || !room) {
-    alert("Please enter both name and room.");
-    return;
-  }
-
-  // Display name and room
-  displayNameEl.textContent = name;
-  displayRoomEl.textContent = room;
-  nameContainer.style.display = "flex";
-  roomContainer.style.display = "flex";
-
-  setupSection.classList.add("hidden");
-  mainSection.classList.remove("hidden");
-
-  showTeacherView();
-});
-
-btnStudent.addEventListener("click", () => {
-  const name = nameInput.value.trim();
-  const room = roomInput.value.trim();
-
-  if (!name || !room) {
-    alert("Please enter both name and room.");
-    return;
-  }
-
-  // Display name and room
-  displayNameEl.textContent = name;
-  displayRoomEl.textContent = room;
-  nameContainer.style.display = "flex";
-  roomContainer.style.display = "flex";
-
-  setupSection.classList.add("hidden");
-  mainSection.classList.remove("hidden");
-
-  showStudentView();
-});
-
-btnDownloadNotes.addEventListener("click", () => {
-  const blob = new Blob([notesArea.value], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "notes.txt";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-});
-
-btnShareScreen.addEventListener("click", async () => {
-  try {
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-    videoEl.srcObject = stream;
-    videoEl.style.display = "block";
-  } catch (err) {
-    console.error("Error sharing screen:", err);
-  }
-});
-
-btnCloseTeacher.addEventListener("click", () => {
-  resetUI();
-});
-
-btnCloseStudent.addEventListener("click", () => {
-  resetUI();
-});
+  <script src="script.js"></script>
+</body>
+</html>
