@@ -23,14 +23,12 @@ const rtcConfig = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-// Send message to signaling server
 function sendSignal(msg) {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(msg));
   }
 }
 
-// Connect to signaling server and handle messages
 function connectSignaling(room, role) {
   ws = new WebSocket(signalingUrl);
 
@@ -52,6 +50,11 @@ function connectSignaling(room, role) {
       if (role === "teacher") {
         btnShareScreen.disabled = false;
       }
+      // For student, hide setup and show main if video already assigned (in case)
+      if (role === "student") {
+        setupSection.classList.add("hidden");
+        mainSection.classList.remove("hidden");
+      }
     } else if (data.type === "new-student" && role === "teacher") {
       await createOfferToStudents();
     } else if (data.type === "offer" && role === "student") {
@@ -70,6 +73,11 @@ function connectSignaling(room, role) {
       teacherDisconnected.classList.remove("hidden");
       teacherDisconnected.classList.add("visible");
       btnShareScreen.disabled = true;
+      // For student: hide main and show setup or a message
+      if (!isTeacher) {
+        mainSection.classList.add("hidden");
+        setupSection.classList.remove("hidden");
+      }
     }
   };
 
@@ -85,7 +93,6 @@ function connectSignaling(room, role) {
   };
 }
 
-// Teacher creates offer to send to all students
 async function createOfferToStudents() {
   if (!pc) return;
   const offer = await pc.createOffer();
@@ -93,16 +100,18 @@ async function createOfferToStudents() {
   sendSignal({ type: "offer", room: roomName, payload: offer });
 }
 
-// Student handles offer from teacher and sends back answer
 async function handleOffer(offer) {
   pc = new RTCPeerConnection(rtcConfig);
 
   pc.ontrack = (event) => {
+    // IMPORTANT: Assign stream only once
+    if (video.srcObject !== event.streams[0]) {
+      video.srcObject = event.streams[0];
+    }
     teacherDisconnected.classList.add("hidden");
     teacherDisconnected.classList.remove("visible");
     setupSection.classList.add("hidden");
     mainSection.classList.remove("hidden");
-    video.srcObject = event.streams[0];
   };
 
   pc.onicecandidate = (event) => {
@@ -117,13 +126,11 @@ async function handleOffer(offer) {
   sendSignal({ type: "answer", room: roomName, payload: answer });
 }
 
-// Teacher handles answer from student
 async function handleAnswer(answer) {
   if (!pc) return;
   await pc.setRemoteDescription(new RTCSessionDescription(answer));
 }
 
-// Start screen sharing (teacher)
 async function startSharing() {
   if (pc) {
     pc.close();
@@ -170,7 +177,6 @@ async function startSharing() {
   }
 }
 
-// Stop screen sharing (teacher)
 function stopSharing() {
   if (screenStream) {
     screenStream.getTracks().forEach((track) => track.stop());
@@ -191,13 +197,12 @@ function stopSharing() {
   isSharing = false;
 }
 
-// Update UI buttons based on role
 function updateUIForRole() {
   if (isTeacher) {
     btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
     btnShareScreen.style.display = "inline-block";
-    btnShareScreen.disabled = true; // enable after signaling join
+    btnShareScreen.disabled = true; // Will enable after signaling join
     btnCloseSession.style.display = "inline-block";
   } else {
     btnStudent.style.display = "none";
@@ -207,7 +212,6 @@ function updateUIForRole() {
   }
 }
 
-// Reset UI and variables to initial setup screen
 function resetToSetup() {
   stopSharing();
   if (pc) {
@@ -240,7 +244,6 @@ function resetToSetup() {
   btnCloseSession.style.display = "none";
 }
 
-// Button event handlers
 btnTeacher.onclick = () => {
   const val = roomInput.value.trim();
   if (!val) {
