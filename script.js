@@ -13,6 +13,9 @@ const mainSection = document.getElementById("main");
 const teacherDisconnected = document.getElementById("teacherDisconnected");
 const leftPane = document.getElementById("leftPane");
 const studentCountDiv = document.getElementById("studentCount");
+const chatMessages = document.getElementById("chatMessages");
+const chatForm = document.getElementById("chatForm");
+const chatInput = document.getElementById("chatInput");
 
 let ws = null;
 let roomName = null;
@@ -35,9 +38,16 @@ const rtcConfig = {
 
 function updateStudentCount() {
   if (!isTeacher) return;
-  const count = Object.keys(teacherPeers).length;
+  const count = Object.keys(teacherPeers).filter(id => teacherPeers[id] !== null).length;
   studentCountDiv.textContent = `Students: ${count}`;
   studentCountDiv.style.display = count > 0 ? "inline-block" : "none";
+}
+
+function addChatMessage(sender, message) {
+  const p = document.createElement("p");
+  p.textContent = `${sender}: ${message}`;
+  chatMessages.appendChild(p);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 /* --------------------- Signaling --------------------- */
@@ -141,6 +151,10 @@ function connectSignaling(room, role) {
         teacherDisconnected.classList.remove("hidden");
         status.textContent = "Teacher disconnected.";
         if (studentPc) { try { studentPc.close(); } catch(e) {} studentPc = null; }
+        break;
+
+      case "chat-message":
+        addChatMessage(data.from || "Anonymous", data.payload.text);
         break;
 
       default:
@@ -296,12 +310,14 @@ function updateUIForRole() {
     btnShareScreen.disabled = true;
     btnCloseSession.style.display = "inline-block";
     studentCountDiv.style.display = "inline-block";
+    chatForm.style.display = "flex";
   } else {
     btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
     btnShareScreen.style.display = "none";
     btnCloseSession.style.display = "inline-block";
     studentCountDiv.style.display = "none";
+    chatForm.style.display = "flex";
   }
 }
 
@@ -335,6 +351,9 @@ function resetToSetup() {
   status.textContent = "";
   studentCountDiv.style.display = "none";
   studentCountDiv.textContent = "Students: 0";
+  chatMessages.innerHTML = "";
+  chatInput.value = "";
+  chatForm.style.display = "none";
 }
 
 /* --------------------- Buttons --------------------- */
@@ -365,3 +384,15 @@ btnShareScreen.onclick = () => {
 btnCloseSession.onclick = () => {
   resetToSetup();
 };
+
+/* --------------------- Chat form handler --------------------- */
+
+chatForm.addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const text = chatInput.value.trim();
+  if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+  sendSignal({ type: "chat-message", room: roomName, payload: { text } });
+  addChatMessage(isTeacher ? "Teacher" : "You", text);
+  chatInput.value = "";
+});
