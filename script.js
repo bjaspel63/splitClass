@@ -69,12 +69,11 @@ function sendSignal(msg) {
   ws.send(JSON.stringify(msg));
 }
 
-function connectSignaling(room, role, name = null) {
+function connectSignaling(room, role, extraPayload = {}) {
   ws = new WebSocket(signalingUrl);
 
   ws.onopen = () => {
-    // Include student name in payload if student role
-    sendSignal({ type: "join", room, payload: { role, name } });
+    sendSignal({ type: "join", room, payload: { role, ...extraPayload } });
     status.textContent = "Connected to signaling server.";
   };
 
