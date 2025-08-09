@@ -140,15 +140,8 @@ function downloadNotes() {
   URL.revokeObjectURL(url);
 }
 
-/* --- Signaling & WebRTC --- */
-
-function sendSignal(msg) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) return;
-  ws.send(JSON.stringify(msg));
-}
-
+/* --- Reset UI after error --- */
 function resetUIAfterError() {
-  // Close ws connection if open
   if (ws) {
     try {
       ws.close();
@@ -156,7 +149,6 @@ function resetUIAfterError() {
     ws = null;
   }
 
-  // Reset UI back to setup screen
   setupSection.classList.remove("hidden");
   mainSection.classList.add("hidden");
 
@@ -183,7 +175,6 @@ function resetUIAfterError() {
   leftPane.classList.remove("teacher-no-video", "student-full");
   document.getElementById("rightPane").style.display = "flex";
 
-  // Clear variables
   for (const key in teacherPeers) delete teacherPeers[key];
   studentId = null;
   studentName = null;
@@ -192,7 +183,13 @@ function resetUIAfterError() {
   isSharing = false;
 }
 
-/* --- Main connection function --- */
+/* --- Signaling & WebRTC --- */
+
+function sendSignal(msg) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  ws.send(JSON.stringify(msg));
+}
+
 function connectSignaling(room, role, extraPayload = {}) {
   console.log("Connecting as", role, "to room", room);
   ws = new WebSocket(signalingUrl);
@@ -216,7 +213,6 @@ function connectSignaling(room, role, extraPayload = {}) {
 
     switch (data.type) {
       case "error":
-        // Show error from server and reset UI so user can retry
         status.textContent = `Error: ${data.message || "Unknown error"}`;
         resetUIAfterError();
         break;
@@ -301,10 +297,6 @@ function connectSignaling(room, role, extraPayload = {}) {
           }
         }
         break;
-        
-        case "error":
-  				status.textContent = data.message || "An error occurred.";
-  			break;
 
       case "candidate":
         if (isTeacher) {
