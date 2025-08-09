@@ -70,6 +70,22 @@ function updateStudentCount() {
 
 function updateUIForRole() {
   if (isTeacher) {
+    
+    pdfUploadInput.style.display = "inline-block";
+  if (pdfViewer.src) {
+    pdfViewerContainer.classList.remove("hidden");
+    btnClearPdf.style.display = "inline-block";
+  } else {
+    pdfViewerContainer.classList.add("hidden");
+    btnClearPdf.style.display = "none";
+  }
+} else {
+  // Hide for students
+  pdfUploadInput.style.display = "none";
+  pdfViewerContainer.classList.add("hidden");
+  btnClearPdf.style.display = "none";
+}
+
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
 
