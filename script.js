@@ -28,6 +28,11 @@ const roomContainer = document.getElementById("roomContainer");
 const teacherControls = document.getElementById("teacherControls");
 const studentControls = document.getElementById("studentControls");
 
+const pdfUploadInput = document.getElementById("pdfUpload");
+const pdfViewerContainer = document.getElementById("pdfViewerContainer");
+const pdfViewer = document.getElementById("pdfViewer");
+const btnClearPdf = document.getElementById("btnClearPdf");
+
 let ws = null;
 let roomName = null;
 let isTeacher = false;
@@ -87,6 +92,17 @@ function updateUIForRole() {
 
     mainSection.classList.remove("student-role");
     mainSection.classList.add("teacher-role");
+
+    // Show PDF upload & viewer for teacher
+    if (pdfUploadInput) pdfUploadInput.style.display = "inline-block";
+    if (pdfViewer.src) {
+      pdfViewerContainer.classList.remove("hidden");
+      btnClearPdf.style.display = "inline-block";
+    } else {
+      pdfViewerContainer.classList.add("hidden");
+      btnClearPdf.style.display = "none";
+    }
+
   } else {
     leftPane.classList.remove("teacher-no-video");
     leftPane.classList.add("student-full");
@@ -104,6 +120,11 @@ function updateUIForRole() {
 
     mainSection.classList.remove("teacher-role");
     mainSection.classList.add("student-role");
+
+    // Hide PDF upload & viewer for student
+    if (pdfUploadInput) pdfUploadInput.style.display = "none";
+    pdfViewerContainer.classList.add("hidden");
+    btnClearPdf.style.display = "none";
   }
 }
 
@@ -184,6 +205,12 @@ function resetUIAfterError() {
   isTeacher = false;
   isSharing = false;
   hasError = false;
+
+  // Also clear PDF viewer & uploader
+  if (pdfViewer) pdfViewer.src = "";
+  if (pdfViewerContainer) pdfViewerContainer.classList.add("hidden");
+  if (btnClearPdf) btnClearPdf.style.display = "none";
+  if (pdfUploadInput) pdfUploadInput.value = "";
 }
 
 /* --- Signaling & WebRTC --- */
@@ -231,12 +258,10 @@ function connectSignaling(room, role, extraPayload = {}) {
         studentName = extraPayload.name || "Anonymous";
         
         const roomNameDisplay = document.getElementById("roomNameDisplay");
-  				if (roomNameDisplay) {
-    			roomNameDisplay.style.display = "block";
-    		roomNameDisplay.textContent = "Room Name: " + roomName;
-  			}
-
- 
+        if (roomNameDisplay) {
+          roomNameDisplay.style.display = "block";
+          roomNameDisplay.textContent = "Room Name: " + roomName;
+        }
 
         btnTeacher.classList.add("hidden");
         btnStudent.classList.add("hidden");
@@ -500,12 +525,12 @@ function closeSession() {
     }
     video.srcObject = null;
   }
-  
 
+  const roomNameDisplay = document.getElementById("roomNameDisplay");
   if (roomNameDisplay) {
     roomNameDisplay.textContent = ""; // clear text
     roomNameDisplay.style.display = "none"; // optionally hide
-		}
+  }
   status.textContent = "Session closed.";
 
   // Reset UI
@@ -550,7 +575,14 @@ function closeSession() {
 
   btnTeacher.classList.remove("hidden");
   btnStudent.classList.remove("hidden");
+
+  // Also clear PDF viewer & uploader
+  if (pdfViewer) pdfViewer.src = "";
+  if (pdfViewerContainer) pdfViewerContainer.classList.add("hidden");
+  if (btnClearPdf) btnClearPdf.style.display = "none";
+  if (pdfUploadInput) pdfUploadInput.value = "";
 }
+
 /* --- Event listeners --- */
 
 btnTeacher.addEventListener("click", () => {
@@ -614,6 +646,30 @@ if (btnDownloadNotes) {
   btnDownloadNotes.addEventListener("click", downloadNotes);
 }
 
+/* --- PDF Upload & Viewer --- */
+
+if (pdfUploadInput && pdfViewer && pdfViewerContainer && btnClearPdf) {
+  pdfUploadInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === "application/pdf") {
+      const fileURL = URL.createObjectURL(file);
+      pdfViewer.src = fileURL;
+      pdfViewerContainer.classList.remove("hidden");
+      btnClearPdf.style.display = "inline-block";
+    } else {
+      alert("Please upload a valid PDF file.");
+      pdfUploadInput.value = ""; // reset input
+    }
+  });
+
+  btnClearPdf.addEventListener("click", () => {
+    pdfViewer.src = "";
+    pdfViewerContainer.classList.add("hidden");
+    btnClearPdf.style.display = "none";
+    pdfUploadInput.value = "";
+  });
+}
+
 /* --- Init --- */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -629,4 +685,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   btnTeacher.classList.remove("hidden");
   btnStudent.classList.remove("hidden");
+
+  // Hide PDF viewer & uploader initially
+  if (pdfUploadInput) pdfUploadInput.style.display = "none";
+  if (pdfViewerContainer) pdfViewerContainer.classList.add("hidden");
+  if (btnClearPdf) btnClearPdf.style.display = "none";
 });
