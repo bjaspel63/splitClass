@@ -10,7 +10,7 @@
   <div id="app">
     <!-- Header (common) -->
     <header>
-      <div id="appTitle">SplitClass + Trinket</div>
+      <div id="appTitle" style="font-weight: bold; font-size: 1.5rem; user-select:none;">SplitClass + Trinket</div>
       <div id="displayRoom" style="font-weight: bold; margin-top: 4px;"></div>
     </header>
 
@@ -35,13 +35,13 @@
 
       <p id="status" class="status-text"></p>
 
-      <!-- Display name and room after joining -->
+      <!-- Display joined info -->
       <div id="displayName" style="font-weight: bold; margin-top: 10px; display:none;"></div>
     </section>
 
-    <!-- Main Section -->
+    <!-- Main Section (Teacher or Student view) -->
     <section id="main" class="hidden">
-      <!-- Left Pane (25% for teacher student list, 50% for student video) -->
+      <!-- Left Pane (Teacher: 25% student list, Student: 50% video) -->
       <div id="leftPane">
         <!-- Teacher student list -->
         <div id="studentsListContainer" class="hidden">
@@ -49,12 +49,11 @@
           <ul id="studentsList"></ul>
         </div>
 
-        <!-- Student video -->
+        <!-- Student video for student role -->
         <video id="video" autoplay playsinline muted></video>
-
       </div>
 
-      <!-- Right Pane -->
+      <!-- Right Pane (Teacher notes 75%, Student Trinket iframe 50%) -->
       <div id="rightPane">
         <!-- Teacher notes -->
         <textarea id="notesArea" placeholder="Type notes here..." class="hidden"></textarea>
@@ -70,18 +69,17 @@
       </div>
     </section>
 
-    <!-- Teacher Controls in header area -->
-    <div id="teacherControls" class="hidden" style="margin-top:10px;">
+    <!-- Controls for Teacher -->
+    <div id="teacherControls" class="hidden" style="margin-top: 10px; display: flex; gap: 10px;">
       <button id="btnDownloadNotes">Download Notes</button>
       <button id="btnShareScreen">Share Screen</button>
       <button id="btnCloseSession">Close Session</button>
     </div>
 
-    <!-- Student Controls -->
-    <div id="studentControls" class="hidden" style="margin-top:10px;">
+    <!-- Controls for Student -->
+    <div id="studentControls" class="hidden" style="margin-top: 10px;">
       <button id="btnCloseSession">Close Session</button>
     </div>
-
   </div>
 
   <script src="script.js"></script>
