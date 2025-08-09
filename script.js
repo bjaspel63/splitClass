@@ -1,4 +1,4 @@
-// script.js -- multi-student-ready client with session recording
+// script.js -- multi-student-ready client
 const signalingUrl = "wss://splitclass-production.up.railway.app";
 
 const video = document.getElementById("video");
@@ -7,33 +7,38 @@ const btnTeacher = document.getElementById("btnTeacher");
 const btnStudent = document.getElementById("btnStudent");
 const btnShareScreen = document.getElementById("btnShareScreen");
 const btnCloseSession = document.getElementById("btnCloseSession");
-const btnStartRecord = document.getElementById("btnStartRecord");
-const btnStopRecord = document.getElementById("btnStopRecord");
 const status = document.getElementById("status");
 const setupSection = document.getElementById("setup");
 const mainSection = document.getElementById("main");
 const teacherDisconnected = document.getElementById("teacherDisconnected");
 const leftPane = document.getElementById("leftPane");
+const studentCountDiv = document.getElementById("studentCount");
 
 let ws = null;
 let roomName = null;
 let isTeacher = false;
 let screenStream = null;
-let micStream = null; // For audio capture
-let combinedStream = null; // Combined screen + audio
 let isSharing = false;
 
-// Recording
-let mediaRecorder = null;
-let recordedChunks = [];
-
+// Teacher side: map studentId -> RTCPeerConnection
 const teacherPeers = {};
+
+// Student side: single RTCPeerConnection
 let studentPc = null;
 let studentId = null;
 
 const rtcConfig = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
 };
+
+/* --------------------- Helpers --------------------- */
+
+function updateStudentCount() {
+  if (!isTeacher) return;
+  const count = Object.keys(teacherPeers).length;
+  studentCountDiv.textContent = `Students: ${count}`;
+  studentCountDiv.style.display = count > 0 ? "inline-block" : "none";
+}
 
 /* --------------------- Signaling --------------------- */
 
@@ -66,6 +71,7 @@ function connectSignaling(room, role) {
           existing.forEach(id => {
             if (!teacherPeers[id]) teacherPeers[id] = null;
           });
+          updateStudentCount();
           btnShareScreen.disabled = false;
           status.textContent = `Teacher ready — ${existing.length} waiting`;
         } else {
@@ -79,6 +85,7 @@ function connectSignaling(room, role) {
       case "student-joined":
         if (isTeacher && data.id) {
           teacherPeers[data.id] = teacherPeers[data.id] || null;
+          updateStudentCount();
           status.textContent = `Student joined: ${data.id}`;
           if (isSharing) offerToStudent(data.id);
         }
@@ -90,6 +97,7 @@ function connectSignaling(room, role) {
             try { teacherPeers[data.id].close(); } catch(e) {}
           }
           delete teacherPeers[data.id];
+          updateStudentCount();
           status.textContent = `Student left: ${data.id}`;
         }
         break;
@@ -162,9 +170,7 @@ async function offerToStudent(studentId) {
   const pc = new RTCPeerConnection(rtcConfig);
   teacherPeers[studentId] = pc;
 
-  // Use combinedStream if recording, else screenStream only
-  const streamToSend = combinedStream || screenStream;
-  streamToSend.getTracks().forEach(track => pc.addTrack(track, streamToSend));
+  screenStream.getTracks().forEach(track => pc.addTrack(track, screenStream));
 
   pc.onicecandidate = (evt) => {
     if (evt.candidate) {
@@ -176,6 +182,7 @@ async function offerToStudent(studentId) {
     if (pc.connectionState === "failed" || pc.connectionState === "closed") {
       try { pc.close(); } catch (e) {}
       teacherPeers[studentId] = null;
+      updateStudentCount();
     }
   };
 
@@ -222,17 +229,10 @@ async function startSharing() {
 }
 
 function stopSharing() {
-  stopRecording(); // auto stop recording if active
-
   if (screenStream) {
     screenStream.getTracks().forEach(t => t.stop());
     screenStream = null;
   }
-  if (micStream) {
-    micStream.getTracks().forEach(t => t.stop());
-    micStream = null;
-  }
-  combinedStream = null;
 
   Object.keys(teacherPeers).forEach(id => {
     const p = teacherPeers[id];
@@ -247,9 +247,7 @@ function stopSharing() {
   leftPane.classList.remove("fullscreen");
   mainSection.classList.remove("fullscreen");
   video.srcObject = null;
-
-  btnStartRecord.disabled = true;
-  btnStopRecord.disabled = true;
+  updateStudentCount();
 }
 
 /* --------------------- Student: handle offer --------------------- */
@@ -288,74 +286,6 @@ async function handleOfferAsStudent(offer) {
   }
 }
 
-/* --------------------- Recording --------------------- */
-
-async function startRecording() {
-  if (!screenStream) {
-    alert("Start screen sharing first to record.");
-    return;
-  }
-
-  try {
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  } catch (err) {
-    console.warn("Microphone access denied or not available:", err);
-    micStream = null;
-  }
-
-  // Combine tracks
-  combinedStream = new MediaStream([
-    ...screenStream.getVideoTracks(),
-    ...(micStream ? micStream.getAudioTracks() : [])
-  ]);
-
-  recordedChunks = [];
-  mediaRecorder = new MediaRecorder(combinedStream, { mimeType: "video/webm; codecs=vp9" });
-
-  mediaRecorder.ondataavailable = (e) => {
-    if (e.data.size > 0) recordedChunks.push(e.data);
-  };
-
-  mediaRecorder.onstop = () => {
-    const blob = new Blob(recordedChunks, { type: "video/webm" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.style.display = "none";
-    a.href = url;
-    a.download = `session_recording_${Date.now()}.webm`;
-    document.body.appendChild(a);
-    a.click();
-
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      recordedChunks = [];
-    }, 100);
-  };
-
-  mediaRecorder.start();
-  status.textContent = "Recording started.";
-
-  // Restart all offers to students with audio now included
-  const studentIds = Object.keys(teacherPeers);
-  for (const id of studentIds) {
-    await offerToStudent(id);
-  }
-
-  btnStartRecord.disabled = true;
-  btnStopRecord.disabled = false;
-}
-
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state !== "inactive") {
-    mediaRecorder.stop();
-    status.textContent = "Recording stopped.";
-  }
-  btnStartRecord.disabled = false;
-  btnStopRecord.disabled = true;
-}
-
 /* --------------------- UI and helpers --------------------- */
 
 function updateUIForRole() {
@@ -365,19 +295,13 @@ function updateUIForRole() {
     btnShareScreen.style.display = "inline-block";
     btnShareScreen.disabled = true;
     btnCloseSession.style.display = "inline-block";
-
-    btnStartRecord.style.display = "inline-block";
-    btnStopRecord.style.display = "inline-block";
-    btnStartRecord.disabled = true;
-    btnStopRecord.disabled = true;
+    studentCountDiv.style.display = "inline-block";
   } else {
     btnStudent.style.display = "none";
     btnTeacher.style.display = "none";
     btnShareScreen.style.display = "none";
     btnCloseSession.style.display = "inline-block";
-
-    btnStartRecord.style.display = "none";
-    btnStopRecord.style.display = "none";
+    studentCountDiv.style.display = "none";
   }
 }
 
@@ -390,10 +314,6 @@ function resetToSetup() {
   Object.keys(teacherPeers).forEach(k => { if (teacherPeers[k]) try { teacherPeers[k].close(); } catch{} teacherPeers[k] = null; });
 
   if (screenStream) { screenStream.getTracks().forEach(t => t.stop()); screenStream = null; }
-  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
-  combinedStream = null;
-
-  stopRecording();
 
   roomName = null;
   isTeacher = false;
@@ -412,10 +332,9 @@ function resetToSetup() {
   btnShareScreen.style.display = "none";
   btnCloseSession.style.display = "none";
 
-  btnStartRecord.style.display = "none";
-  btnStopRecord.style.display = "none";
-
   status.textContent = "";
+  studentCountDiv.style.display = "none";
+  studentCountDiv.textContent = "Students: 0";
 }
 
 /* --------------------- Buttons --------------------- */
@@ -445,12 +364,4 @@ btnShareScreen.onclick = () => {
 
 btnCloseSession.onclick = () => {
   resetToSetup();
-};
-
-btnStartRecord.onclick = () => {
-  startRecording();
-};
-
-btnStopRecord.onclick = () => {
-  stopRecording();
 };
