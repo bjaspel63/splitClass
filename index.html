@@ -5,23 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SplitClass - Screen Share + Editor</title>
   <link rel="stylesheet" href="style.css" />
-
 </head>
 <body>
   <div id="app">
     <header>
-      <h1>SplitClass</h1>
+      <div class="header-left">
+        <h1>SplitClass</h1>
+      </div>
+      <div class="header-right">
+        <button id="btnTeacher">Start as Teacher</button>
+        <button id="btnStudent">Join as Student</button>
+        <button id="btnShareScreen" disabled>Share Screen</button>
+      </div>
     </header>
 
     <section id="setup">
-      <label>
-        Room Name:
-        <input id="roomInput" type="text" placeholder="Enter room name" />
-      </label>
-      <div>
-        <button id="btnTeacher">Start as Teacher</button>
-        <button id="btnStudent">Join as Student</button>
-      </div>
+      <label for="roomInput">Room Name:</label>
+      <input id="roomInput" type="text" placeholder="Enter room name" />
       <p id="status"></p>
     </section>
 
@@ -31,9 +31,20 @@
         <p id="teacherDisconnected" class="hidden">Teacher disconnected.</p>
       </div>
       <div id="rightPane">
-        <iframe src="https://trinket.io/embed/python/3d8d7ce66b" width="100%" height="356" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen></iframe>
+        <iframe
+          id="editorFrame"
+          src="https://trinket.io/embed/python/3d8d7ce66b"
+          allowfullscreen
+          frameborder="0"
+          width="100%"
+          height="100%"
+        ></iframe>
       </div>
     </section>
+
+    <footer>
+      <p>© 2025 SplitClass • Built with WebRTC, Trinket, and Netlify</p>
+    </footer>
   </div>
 
   <script src="script.js"></script>
