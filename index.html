@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SplitClass + Trinket</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Minimal styling to hide/show */
-    .hidden { display: none; }
-  </style>
 </head>
 <body>
   <div id="app">
@@ -16,32 +12,32 @@
       <div class="header-left">
         <h1>SplitClass + Trinket</h1>
       </div>
-      <div class="header-right" style="display:flex; align-items:center; gap: 0.5rem;">
-        <button id="btnTeacher">Start as Teacher</button>
-        <button id="btnStudent">Join as Student</button>
-        <button id="btnShareScreen" disabled style="display:none;">Share Screen</button>
-        <button id="btnCloseSession" style="display:none;">Close Session</button>
-        <div id="studentCount" style="color:#f97316; font-weight:600; user-select:none; display:none;">
+      <div class="header-right" role="region" aria-label="Session controls" style="display:flex; align-items:center; gap: 0.5rem;">
+        <button id="btnTeacher" aria-label="Start as Teacher">Start as Teacher</button>
+        <button id="btnStudent" aria-label="Join as Student">Join as Student</button>
+        <button id="btnShareScreen" disabled style="display:none;" aria-label="Share or stop sharing screen">Share Screen</button>
+        <button id="btnCloseSession" style="display:none;" aria-label="Close session">Close Session</button>
+        <div id="studentCount" aria-live="polite" style="color:#f97316; font-weight:600; user-select:none; display:none;">
           Students: 0
         </div>
       </div>
     </header>
 
-    <section id="setup">
+    <section id="setup" aria-label="Setup section">
       <div id="studentNameContainer" style="margin-bottom: 1rem;">
         <label for="studentNameInput">Your Name:</label>
-        <input id="studentNameInput" type="text" placeholder="Enter your name" />
+        <input id="studentNameInput" type="text" placeholder="Enter your name" autocomplete="name" />
       </div>
 
       <label for="roomInput">Room Name:</label>
-      <input id="roomInput" type="text" placeholder="Enter room name" />
-      
-      <p id="status" style="margin-top: 0.5rem; color: #333;"></p>
+      <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
+
+      <p id="status" role="status" style="margin-top: 0.5rem; color: #f97316;"></p>
     </section>
 
-    <section id="main" class="hidden">
-      <div id="leftPane">
-        <video id="video" autoplay playsinline style="width: 100%; max-height: 300px; background: black;"></video>
+    <section id="main" class="hidden" aria-label="Main session area">
+      <div id="leftPane" aria-live="polite">
+        <video id="video" autoplay playsinline muted style="width: 100%; max-height: 300px; background: black;" aria-label="Screen share video"></video>
 
         <div id="studentsListContainer" class="hidden" style="margin-top: 1rem;">
           <h3>Students Attending (<span id="studentCountDisplay">0</span>)</h3>
@@ -60,13 +56,14 @@
           allowfullscreen
           frameborder="0"
           width="100%"
-          height="500px"
+          height="500"
           style="border: 1px solid #ccc;"
+          title="Python coding editor"
         ></iframe>
       </div>
     </section>
 
-    <footer style="margin-top: 2rem; text-align: center; color: #555;">
+    <footer>
       <p>© 2025 SplitClass • Built by bjaspel</p>
     </footer>
   </div>
