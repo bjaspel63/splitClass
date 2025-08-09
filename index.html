@@ -12,60 +12,63 @@
       <div class="header-left">
         <h1>SplitClass + Trinket</h1>
       </div>
-      <div class="header-right" role="region" aria-label="Session controls" style="display:flex; align-items:center; gap: 0.5rem;">
-        <button id="btnTeacher" aria-label="Start as Teacher">Start as Teacher</button>
-        <button id="btnStudent" aria-label="Join as Student">Join as Student</button>
-        <button id="btnShareScreen" disabled style="display:none;" aria-label="Share or stop sharing screen">Share Screen</button>
-        <button id="btnCloseSession" style="display:none;" aria-label="Close session">Close Session</button>
-        <div id="studentCount" aria-live="polite" style="color:#f97316; font-weight:600; user-select:none; display:none;">
+      <div class="header-right" style="display:flex; align-items:center; gap: 0.5rem;">
+        <button id="btnTeacher">Start as Teacher</button>
+        <button id="btnStudent">Join as Student</button>
+        <button id="btnShareScreen" disabled style="display:none;">Share Screen</button>
+        <button id="btnCloseSession" style="display:none;">Close Session</button>
+        <div id="studentCount" style="color:#f97316; font-weight:600; user-select:none; display:none;">
           Students: 0
         </div>
       </div>
     </header>
 
-    <section id="setup" aria-label="Setup section">
-      <div id="studentNameContainer" class="input-group">
-        <input id="studentNameInput" type="text" placeholder="Enter your name" autocomplete="name" />
-        <label for="studentNameInput">Your Name:</label>
+    <section id="setup">
+      <div style="display:flex; flex-direction: column; max-width: 300px; gap: 0.5rem;">
+        <label for="studentNameInput" style="font-weight:600;">Your Name:</label>
+        <input id="studentNameInput" type="text" placeholder="Enter your name" />
       </div>
-
-      <div id="roomInputContainer" class="input-group">
-        <input id="roomInput" type="text" placeholder="Enter room name" autocomplete="off" />
-        <label for="roomInput">Room Name:</label>
+      <div style="display:flex; flex-direction: column; max-width: 300px; margin-left: 1rem; gap: 0.5rem;">
+        <label for="roomInput" style="font-weight:600;">Room Name:</label>
+        <input id="roomInput" type="text" placeholder="Enter room name" />
       </div>
-
-      <p id="status" role="status" style="margin-top: 0.5rem; color: #f97316;"></p>
+      <p id="status" style="margin-top: 0.5rem; color: #f97316; font-weight: 600;"></p>
     </section>
 
-    <section id="main" class="hidden" aria-label="Main session area">
-      <div id="leftPane" aria-live="polite">
-        <video id="video" autoplay playsinline muted style="width: 100%; max-height: 300px; background: black;" aria-label="Screen share video"></video>
+    <section id="main" class="hidden">
+      <div id="leftPane">
+        <!-- For student: video full height -->
+        <video id="video" autoplay playsinline style="width: 100%; height: 100%; background: black;"></video>
 
-        <div id="studentsListContainer" style="margin-top: 1rem;">
+        <!-- For teacher: student attendance -->
+        <div id="studentsListContainer" class="hidden" style="padding: 1rem;">
           <h3>Students Attending (<span id="studentCountDisplay">0</span>)</h3>
-          <ul id="studentsList" style="list-style-type: none; padding-left: 0;"></ul>
+          <ul id="studentsList" style="list-style:none; padding-left:0; max-height: 300px; overflow-y: auto; color: #fbbf24; font-weight: 600;"></ul>
         </div>
 
-        <p id="teacherDisconnected" class="hidden" style="color: red; font-weight: 600; margin-top: 1rem;">
+        <p id="teacherDisconnected" class="hidden" style="color: red; font-weight: 700; text-align: center; margin-top: 1rem;">
           Teacher disconnected.
         </p>
       </div>
 
       <div id="rightPane">
+        <!-- Teacher: Notes textarea -->
+        <textarea id="notesArea" class="hidden" placeholder="Type notes here..." spellcheck="false" style="width:100%; height:100%; padding:1rem; font-size:1rem; border-radius: 8px; border: 1px solid #334155; background:#0f172a; color:#f1f5f9; resize:none;"></textarea>
+
+        <!-- Student: Trinket iframe -->
         <iframe
           id="editorFrame"
           src="https://trinket.io/embed/python/3d8d7ce66b"
           allowfullscreen
           frameborder="0"
           width="100%"
-          height="500"
-          style="border: 1px solid #ccc;"
-          title="Python coding editor"
+          height="100%"
+          style="border-radius: 8px; border: 1px solid #334155;"
         ></iframe>
       </div>
     </section>
 
-    <footer>
+    <footer style="margin-top: 2rem; text-align: center; color: #555;">
       <p>© 2025 SplitClass • Built by bjaspel</p>
     </footer>
   </div>
