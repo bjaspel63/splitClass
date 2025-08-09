@@ -158,6 +158,11 @@ header {
   text-align: center;
 }
 
+#pdfViewerContainer {
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
 /* Main Section Layout */
 #main {
   flex: 1;
