@@ -1,4 +1,3 @@
-// script.js -- multi-student-ready client with student name input and attendance list
 const signalingUrl = "wss://splitclass-production.up.railway.app";
 
 const video = document.getElementById("video");
@@ -13,13 +12,13 @@ const mainSection = document.getElementById("main");
 const teacherDisconnected = document.getElementById("teacherDisconnected");
 const leftPane = document.getElementById("leftPane");
 const studentCountDiv = document.getElementById("studentCount");
-
-const studentNameContainer = document.getElementById("studentNameContainer");
-const studentNameInput = document.getElementById("studentNameInput");
-
 const studentsListContainer = document.getElementById("studentsListContainer");
 const studentsList = document.getElementById("studentsList");
 const studentCountDisplay = document.getElementById("studentCountDisplay");
+const notesArea = document.getElementById("notesArea");
+const editorFrame = document.getElementById("editorFrame");
+
+const studentNameInput = document.getElementById("studentNameInput");
 
 let ws = null;
 let roomName = null;
@@ -27,42 +26,71 @@ let isTeacher = false;
 let screenStream = null;
 let isSharing = false;
 
-// Teacher side: map studentId -> { pc: RTCPeerConnection|null, name: string }
 const teacherPeers = {};
-
-// Student side: single RTCPeerConnection
 let studentPc = null;
 let studentId = null;
 let studentName = null;
 
-const rtcConfig = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-};
+const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
-/* --------------------- Helpers --------------------- */
+/* --- UI Helpers --- */
 
 function updateStudentCount() {
   if (!isTeacher) return;
   const count = Object.keys(teacherPeers).length;
   studentCountDiv.textContent = `Students: ${count}`;
   studentCountDiv.style.display = count > 0 ? "inline-block" : "none";
-
   studentCountDisplay.textContent = count;
-  if(count > 0) {
-    studentsListContainer.classList.remove("hidden");
+
+  if (count > 0) {
+    studentsListContainer.style.display = "block";
     studentsList.innerHTML = "";
-    for (const [id, info] of Object.entries(teacherPeers)) {
+    for (const info of Object.values(teacherPeers)) {
       const li = document.createElement("li");
-      li.textContent = info.name ? `${info.name} (${id})` : id;
+      li.textContent = info.name || "Anonymous";
       studentsList.appendChild(li);
     }
   } else {
-    studentsListContainer.classList.add("hidden");
+    studentsListContainer.style.display = "none";
     studentsList.innerHTML = "";
   }
 }
 
-/* --------------------- Signaling --------------------- */
+function updateUIForRole() {
+  if (isTeacher) {
+    // Teacher: left pane attendance only, right pane notes visible
+    leftPane.classList.remove("student-full");
+    leftPane.classList.add("teacher-no-video");
+    studentsListContainer.style.display = "block";
+    video.style.display = "none";
+
+    notesArea.classList.remove("hidden");
+    editorFrame.classList.add("hidden");
+
+    document.getElementById("rightPane").style.display = "flex";
+
+    studentCountDiv.style.display = "inline-block";
+    btnShareScreen.style.display = "inline-block";
+    btnShareScreen.disabled = false;
+    btnCloseSession.style.display = "inline-block";
+  } else {
+    // Student: left pane full video, right pane Trinket visible, notes hidden
+    leftPane.classList.remove("teacher-no-video");
+    leftPane.classList.add("student-full");
+    video.style.display = "block";
+    studentsListContainer.style.display = "none";
+
+    notesArea.classList.add("hidden");
+    editorFrame.classList.remove("hidden");
+    document.getElementById("rightPane").style.display = "flex";
+
+    studentCountDiv.style.display = "none";
+    btnShareScreen.style.display = "none";
+    btnCloseSession.style.display = "none";
+  }
+}
+
+/* --- Signaling & WebRTC --- */
 
 function sendSignal(msg) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
@@ -79,40 +107,42 @@ function connectSignaling(room, role, extraPayload = {}) {
 
   ws.onmessage = async (ev) => {
     let data;
-    try { data = JSON.parse(ev.data); } catch (e) { return; }
+    try { data = JSON.parse(ev.data); } catch { return; }
 
     switch (data.type) {
       case "joined":
+        isTeacher = (data.role === "teacher");
         status.textContent = `Joined room as ${data.role}.`;
         setupSection.classList.add("hidden");
         mainSection.classList.remove("hidden");
         updateUIForRole();
 
         if (isTeacher) {
-          // data.students is array of {id, name}
           if (Array.isArray(data.students)) {
-            data.students.forEach(({id, name}) => {
-              if (!teacherPeers[id]) teacherPeers[id] = { pc: null, name: name || id };
+            data.students.forEach(({ id, name }) => {
+              teacherPeers[id] = { pc: null, name: name || "Anonymous" };
             });
           }
           updateStudentCount();
           btnShareScreen.disabled = false;
-          status.textContent = `Teacher ready — ${Object.keys(teacherPeers).length} waiting`;
+          status.textContent = `Teacher ready — ${Object.keys(teacherPeers).length} student(s) connected`;
         } else {
           if (data.id) {
             studentId = data.id;
             studentName = data.name || extraPayload.name || "Anonymous";
-            status.textContent = `Student ready: ${studentName} (id: ${studentId})`;
+            status.textContent = `Student ready: ${studentName}`;
           }
         }
         break;
 
       case "student-joined":
         if (isTeacher && data.id) {
-          teacherPeers[data.id] = teacherPeers[data.id] || { pc: null, name: data.name || data.id };
+          teacherPeers[data.id] = teacherPeers[data.id] || { pc: null, name: data.name || "Anonymous" };
           updateStudentCount();
-          status.textContent = `Student joined: ${data.name || data.id}`;
-          if (isSharing) offerToStudent(data.id);
+          status.textContent = `Student joined: ${data.name || "Anonymous"}`;
+          if (isSharing) {
+            offerToStudent(data.id);
+          }
         }
         break;
 
@@ -120,11 +150,11 @@ function connectSignaling(room, role, extraPayload = {}) {
         if (isTeacher && data.id) {
           if (teacherPeers[data.id]) {
             if (teacherPeers[data.id].pc) {
-              try { teacherPeers[data.id].pc.close(); } catch(e) {}
+              try { teacherPeers[data.id].pc.close(); } catch {}
             }
             delete teacherPeers[data.id];
             updateStudentCount();
-            status.textContent = `Student left: ${data.id}`;
+            status.textContent = `Student left`;
           }
         }
         break;
@@ -144,8 +174,6 @@ function connectSignaling(room, role, extraPayload = {}) {
             } catch (err) {
               console.warn("Failed to set remote desc (answer) for", data.from, err);
             }
-          } else {
-            console.warn("Answer received for unknown student or peer:", data.from);
           }
         }
         break;
@@ -155,11 +183,11 @@ function connectSignaling(room, role, extraPayload = {}) {
           const from = data.from;
           const cand = data.payload;
           if (from && teacherPeers[from] && teacherPeers[from].pc) {
-            try { await teacherPeers[from].pc.addIceCandidate(cand); } catch (err) { console.warn("teacher addIce failed", err); }
+            try { await teacherPeers[from].pc.addIceCandidate(cand); } catch {}
           }
         } else {
           if (studentPc) {
-            try { await studentPc.addIceCandidate(data.payload); } catch (err) { console.warn("student addIce failed", err); }
+            try { await studentPc.addIceCandidate(data.payload); } catch {}
           }
         }
         break;
@@ -167,7 +195,10 @@ function connectSignaling(room, role, extraPayload = {}) {
       case "teacher-left":
         teacherDisconnected.classList.remove("hidden");
         status.textContent = "Teacher disconnected.";
-        if (studentPc) { try { studentPc.close(); } catch(e) {} studentPc = null; }
+        if (studentPc) {
+          try { studentPc.close(); } catch {}
+          studentPc = null;
+        }
         break;
 
       default:
@@ -185,12 +216,12 @@ function connectSignaling(room, role, extraPayload = {}) {
   };
 }
 
-/* --------------------- Teacher: offer / peers --------------------- */
+/* --- Teacher: offer peers --- */
 
 async function offerToStudent(studentId) {
   if (!screenStream) return;
   if (teacherPeers[studentId] && teacherPeers[studentId].pc) {
-    try { teacherPeers[studentId].pc.close(); } catch (e) {}
+    try { teacherPeers[studentId].pc.close(); } catch {}
     teacherPeers[studentId].pc = null;
   }
 
@@ -205,212 +236,180 @@ async function offerToStudent(studentId) {
     }
   };
 
-  pc.onconnectionstatechange = () => {
-    if (pc.connectionState === "failed" || pc.connectionState === "closed") {
-      try { pc.close(); } catch (e) {}
-      teacherPeers[studentId].pc = null;
-      updateStudentCount();
-    }
-  };
-
   try {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     sendSignal({ type: "offer", room: roomName, payload: offer, to: studentId });
   } catch (err) {
-    console.error("Error creating/sending offer to", studentId, err);
+    console.error("Failed to create/send offer", err);
   }
 }
 
-/* Called when teacher toggles startSharing */
-async function startSharing() {
-  try {
-    Object.values(teacherPeers).forEach(info => {
-      if (info.pc) try { info.pc.close(); } catch {}
-    });
-    Object.keys(teacherPeers).forEach(k => teacherPeers[k].pc = null);
-
-    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-    video.srcObject = screenStream;
-
-    isSharing = true;
-    btnShareScreen.textContent = "Stop Sharing";
-    leftPane.classList.add("fullscreen");
-    mainSection.classList.add("fullscreen");
-    teacherDisconnected.classList.add("hidden");
-
-    const studentIds = Object.keys(teacherPeers);
-    for (const id of studentIds) {
-      await offerToStudent(id);
-    }
-
-    const track = screenStream.getVideoTracks()[0];
-    if (track) {
-      track.addEventListener("ended", () => {
-        stopSharing();
-      });
-    }
-  } catch (err) {
-    console.error("startSharing error:", err);
-    alert("Screen share permission denied or error: " + (err && err.message));
-    status.textContent = "Screen share permission denied.";
-  }
-}
-
-function stopSharing() {
-  if (screenStream) {
-    screenStream.getTracks().forEach(t => t.stop());
-    screenStream = null;
-  }
-
-  Object.keys(teacherPeers).forEach(id => {
-    const info = teacherPeers[id];
-    if (info.pc) {
-      try { info.pc.close(); } catch(e) {}
-      info.pc = null;
-    }
-  });
-
-  isSharing = false;
-  btnShareScreen.textContent = "Share Screen";
-  leftPane.classList.remove("fullscreen");
-  mainSection.classList.remove("fullscreen");
-  video.srcObject = null;
-  updateStudentCount();
-}
-
-/* --------------------- Student: handle offer --------------------- */
+/* --- Student: handle offer --- */
 
 async function handleOfferAsStudent(offer) {
-  if (studentPc) {
-    try { studentPc.close(); } catch (e) {}
-    studentPc = null;
+  if (!studentPc) {
+    studentPc = new RTCPeerConnection(rtcConfig);
+
+    studentPc.onicecandidate = (evt) => {
+      if (evt.candidate) {
+        sendSignal({ type: "candidate", room: roomName, payload: evt.candidate });
+      }
+    };
+
+    studentPc.ontrack = (evt) => {
+      if (video.srcObject !== evt.streams[0]) {
+        video.srcObject = evt.streams[0];
+      }
+    };
   }
-
-  const pc = new RTCPeerConnection(rtcConfig);
-  studentPc = pc;
-
-  pc.ontrack = (evt) => {
-    if (video.srcObject !== evt.streams[0]) {
-      video.srcObject = evt.streams[0];
-    }
-    teacherDisconnected.classList.add("hidden");
-    setupSection.classList.add("hidden");
-    mainSection.classList.remove("hidden");
-  };
-
-  pc.onicecandidate = (evt) => {
-    if (evt.candidate) {
-      sendSignal({ type: "candidate", room: roomName, payload: evt.candidate, to: "teacher" });
-    }
-  };
 
   try {
-    await pc.setRemoteDescription(new RTCSessionDescription(offer));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
+    await studentPc.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await studentPc.createAnswer();
+    await studentPc.setLocalDescription(answer);
     sendSignal({ type: "answer", room: roomName, payload: answer });
   } catch (err) {
-    console.error("Error handling offer as student:", err);
+    console.error("Error handling offer on student", err);
   }
 }
 
-/* --------------------- UI / Button handlers --------------------- */
+/* --- Screen sharing --- */
 
-function updateUIForRole() {
+async function startScreenShare() {
+  if (!isTeacher) return;
+  if (isSharing) {
+    stopScreenShare();
+    return;
+  }
+
+  try {
+    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    video.srcObject = screenStream;
+    isSharing = true;
+    btnShareScreen.textContent = "Stop Sharing";
+
+    for (const studentId of Object.keys(teacherPeers)) {
+      offerToStudent(studentId);
+    }
+
+    screenStream.getVideoTracks()[0].onended = () => {
+      stopScreenShare();
+    };
+  } catch (err) {
+    status.textContent = "Failed to share screen: " + err.message;
+    console.error(err);
+  }
+}
+
+function stopScreenShare() {
+  if (!screenStream) return;
+  screenStream.getTracks().forEach(t => t.stop());
+  screenStream = null;
+  isSharing = false;
+  video.srcObject = null;
+  btnShareScreen.textContent = "Share Screen";
+
+  for (const peer of Object.values(teacherPeers)) {
+    if (peer.pc) {
+      try { peer.pc.close(); } catch {}
+      peer.pc = null;
+    }
+  }
+}
+
+/* --- Close session --- */
+
+function closeSession() {
+  if (ws) {
+    try {
+      sendSignal({ type: "close", room: roomName });
+      ws.close();
+    } catch {}
+    ws = null;
+  }
+
   if (isTeacher) {
-    btnTeacher.style.display = "none";
-    btnStudent.style.display = "none";
-    btnShareScreen.style.display = "inline-block";
-    btnCloseSession.style.display = "inline-block";
-    studentNameContainer.style.display = "none";
-    studentCountDiv.style.display = Object.keys(teacherPeers).length > 0 ? "inline-block" : "none";
+    stopScreenShare();
+    for (const peer of Object.values(teacherPeers)) {
+      if (peer.pc) {
+        try { peer.pc.close(); } catch {}
+        peer.pc = null;
+      }
+    }
   } else {
-    btnTeacher.style.display = "none";
-    btnStudent.style.display = "none";
-    btnShareScreen.style.display = "none";
-    btnCloseSession.style.display = "inline-block";
-    studentNameContainer.style.display = "block";
-    studentCountDiv.style.display = "none";
+    if (studentPc) {
+      try { studentPc.close(); } catch {}
+      studentPc = null;
+    }
+    video.srcObject = null;
   }
+
+  status.textContent = "Session closed.";
+  setupSection.classList.remove("hidden");
+  mainSection.classList.add("hidden");
+  leftPane.classList.remove("teacher-no-video", "student-full");
+  document.getElementById("rightPane").style.display = "flex";
+
+  btnShareScreen.style.display = "none";
+  btnCloseSession.style.display = "none";
+  btnShareScreen.disabled = true;
+  studentCountDiv.style.display = "none";
+
+  for (const key in teacherPeers) delete teacherPeers[key];
+  studentId = null;
+  studentName = null;
+  roomName = null;
+  isTeacher = false;
+  isSharing = false;
+  studentsList.innerHTML = "";
+  studentCountDisplay.textContent = "0";
+
+  notesArea.value = "";
 }
+
+/* --- Event listeners --- */
 
 btnTeacher.addEventListener("click", () => {
   roomName = roomInput.value.trim();
+  const nameVal = studentNameInput.value.trim() || "Teacher";
   if (!roomName) {
-    alert("Please enter a room name.");
+    status.textContent = "Please enter a room name.";
     return;
   }
   isTeacher = true;
-  connectSignaling(roomName, "teacher");
+  connectSignaling(roomName, "teacher", { name: nameVal });
 });
 
 btnStudent.addEventListener("click", () => {
   roomName = roomInput.value.trim();
-  studentName = studentNameInput.value.trim();
+  const nameVal = studentNameInput.value.trim();
   if (!roomName) {
-    alert("Please enter a room name.");
+    status.textContent = "Please enter a room name.";
     return;
   }
-  if (!studentName) {
-    alert("Please enter your name.");
+  if (!nameVal) {
+    status.textContent = "Please enter your name.";
     return;
   }
   isTeacher = false;
-  connectSignaling(roomName, "student", { name: studentName });
+  connectSignaling(roomName, "student", { name: nameVal });
 });
 
 btnShareScreen.addEventListener("click", () => {
-  if (isSharing) {
-    stopSharing();
-  } else {
-    startSharing();
-  }
+  startScreenShare();
 });
 
 btnCloseSession.addEventListener("click", () => {
-  if (ws) ws.close();
-  resetUI();
+  closeSession();
 });
 
-function resetUI() {
-  isTeacher = false;
-  isSharing = false;
-  screenStream?.getTracks().forEach(t => t.stop());
-  screenStream = null;
+/* --- Init --- */
 
-  // Close all peer connections
-  Object.values(teacherPeers).forEach(({ pc }) => {
-    if (pc) try { pc.close(); } catch {}
-  });
-  Object.keys(teacherPeers).forEach(k => delete teacherPeers[k]);
-
-  if (studentPc) {
-    try { studentPc.close(); } catch {}
-    studentPc = null;
-  }
-
-  roomName = null;
-  studentId = null;
-  studentName = null;
-
-  setupSection.classList.remove("hidden");
-  mainSection.classList.add("hidden");
-  btnTeacher.style.display = "inline-block";
-  btnStudent.style.display = "inline-block";
-  btnShareScreen.style.display = "none";
-  btnCloseSession.style.display = "none";
-  studentNameContainer.style.display = "block";
-  studentCountDiv.style.display = "none";
-  status.textContent = "";
-  video.srcObject = null;
-  teacherDisconnected.classList.add("hidden");
-  updateStudentCount();
-}
-
-// Optional: Prevent form submission on Enter in inputs
-[roomInput, studentNameInput].forEach(input =>
-  input.addEventListener("keydown", e => {
-    if (e.key === "Enter") e.preventDefault();
-  })
-);
+status.textContent = "Enter room name and your name, then select role to join.";
+btnShareScreen.style.display = "none";
+btnCloseSession.style.display = "none";
+studentCountDiv.style.display = "none";
+studentsListContainer.style.display = "none";
+notesArea.classList.add("hidden");
+editorFrame.classList.remove("hidden");
