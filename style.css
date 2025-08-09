@@ -112,6 +112,7 @@ header {
   position: relative;
   box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
   flex-shrink: 0; /* prevent shrinking */
+  padding: 0;
 }
 
 /* Video styles */
@@ -122,6 +123,7 @@ header {
   object-fit: contain;
   background: black;
   border-radius: 10px;
+  display: block;
 }
 
 #teacherDisconnected {
