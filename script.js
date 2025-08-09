@@ -492,7 +492,7 @@ function closeSession() {
     video.srcObject = null;
   }
   
-  const roomNameDisplay = document.getElementById("roomNameDisplay");
+
   if (roomNameDisplay) {
     roomNameDisplay.textContent = ""; // clear text
     roomNameDisplay.style.display = "none"; // optionally hide
