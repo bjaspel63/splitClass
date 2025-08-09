@@ -29,6 +29,7 @@ header {
   background: #0f172a;
   border-bottom: 1px solid #334155;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  user-select: none;
 }
 
 .header-left h1 {
@@ -109,6 +110,7 @@ header {
   overflow: hidden;
   position: relative;
   box-shadow: 0 0 12px rgb(59 130 246 / 0.5);
+  flex-shrink: 0; /* prevent shrinking */
 }
 
 /* Video styles */
@@ -162,7 +164,8 @@ footer {
 
 #leftPane.fullscreen {
   position: fixed;
-  top: 0; left: 0;
+  top: 0; 
+  left: 0;
   width: 100vw;
   height: 100vh;
   margin: 0;
@@ -175,15 +178,19 @@ footer {
 #leftPane.fullscreen video {
   width: 100vw;
   height: 100vh;
-  object-fit: contain;
+  object-fit: contain; /* Use contain to avoid cropping */
+  border-radius: 0;
 }
 
+/* Hide other UI elements when fullscreen */
 #main.fullscreen #rightPane,
 #main.fullscreen header,
 #main.fullscreen #setup,
 #main.fullscreen footer {
   display: none;
 }
+
+/* Utility */
 
 .hidden {
   display: none !important;
