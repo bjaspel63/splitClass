@@ -30,6 +30,17 @@ wss.on('connection', (ws) => {
     switch(type) {
       case 'join':
         if (payload.role === 'teacher') {
+          // Prevent multiple teachers joining same room
+          if (currentRoom.teacher && currentRoom.teacher.readyState === WebSocket.OPEN) {
+            // Reject join request with error
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'Room already has a teacher. Please choose a different room name.'
+            }));
+            ws.close();
+            return;
+          }
+
           currentRoom.teacher = ws;
           ws.role = 'teacher';
           ws.room = room;
@@ -47,6 +58,16 @@ wss.on('connection', (ws) => {
             students: studentsList
           }));
         } else if (payload.role === 'student') {
+          // Make sure there is a teacher present to join
+          if (!currentRoom.teacher || currentRoom.teacher.readyState !== WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: 'No active teacher in the room. Please join a different room.'
+            }));
+            ws.close();
+            return;
+          }
+
           const studentId = `student${currentRoom.nextStudentId++}`;
           ws.role = 'student';
           ws.room = room;
