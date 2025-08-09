@@ -45,19 +45,21 @@ const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
 function updateStudentCount() {
   if (!isTeacher) return;
-  const count = Object.keys(teacherPeers).length;
+  const studentIds = Object.keys(teacherPeers);
+  const count = studentIds.length;
   studentCountDisplay.textContent = count;
 
-  studentsList.innerHTML = "";
+  studentsList.innerHTML = ""; // Clear old list
+
+  studentsListContainer.style.display = "block";
+
   if (count > 0) {
-    studentsListContainer.style.display = "block";
-    for (const info of Object.values(teacherPeers)) {
+    studentIds.forEach((id) => {
       const li = document.createElement("li");
-      li.textContent = info.name || "Anonymous";
+      li.textContent = teacherPeers[id].name || "Anonymous";
       studentsList.appendChild(li);
-    }
+    });
   } else {
-    studentsListContainer.style.display = "block";
     const li = document.createElement("li");
     li.innerHTML = "<em>No students yet</em>";
     studentsList.appendChild(li);
