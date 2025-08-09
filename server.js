@@ -1,148 +1,177 @@
 const WebSocket = require('ws');
-const { v4: uuidv4 } = require('uuid'); // use UUIDs for student IDs
 
 const PORT = process.env.PORT || 3000;
 const wss = new WebSocket.Server({ port: PORT });
 
-let rooms = {}; 
-// rooms = {
-//   roomName: {
-//     teacher: ws,
-//     students: { studentId: ws, ... }
-//   }
-// }
+let rooms = {}; // roomName -> { teacher: ws, students: Map studentId->ws, nextStudentId: number }
 
 wss.on('connection', (ws) => {
-  ws.id = uuidv4(); // unique id for every connection
+  ws.id = null;
+  ws.role = null;
+  ws.room = null;
 
   ws.on('message', (msg) => {
     let data;
     try { data = JSON.parse(msg); } catch (e) { return; }
     const { type, room, payload, to } = data;
+
     if (!room) return;
 
-    if (!rooms[room]) rooms[room] = { teacher: null, students: {} };
+    // Initialize room if not exist
+    if (!rooms[room]) {
+      rooms[room] = {
+        teacher: null,
+        students: new Map(),
+        nextStudentId: 1,
+      };
+    }
+
+    const currentRoom = rooms[room];
 
     switch(type) {
       case 'join':
         if (payload.role === 'teacher') {
-          rooms[room].teacher = ws;
+          currentRoom.teacher = ws;
           ws.role = 'teacher';
           ws.room = room;
-          ws.id = 'teacher'; // fixed id for teacher
-          // send joined info with current students
-          ws.send(JSON.stringify({ 
-            type: 'joined', 
-            role: 'teacher', 
-            students: Object.keys(rooms[room].students) 
+          ws.id = 'teacher';
+          // Send back joined + existing student IDs
+          ws.send(JSON.stringify({
+            type: 'joined',
+            role: 'teacher',
+            students: Array.from(currentRoom.students.keys())
           }));
-          console.log(`Teacher joined room ${room}`);
-        } else {
-          // Student join: assign id and store
+        } else if (payload.role === 'student') {
+          // Assign unique student ID
+          const studentId = `student${currentRoom.nextStudentId++}`;
           ws.role = 'student';
           ws.room = room;
-          const studentId = ws.id; 
-          rooms[room].students[studentId] = ws;
+          ws.id = studentId;
+          currentRoom.students.set(studentId, ws);
 
-          // Inform student of their id
-          ws.send(JSON.stringify({ type: 'joined', role: 'student', id: studentId }));
+          // Send joined message with ID
+          ws.send(JSON.stringify({
+            type: 'joined',
+            role: 'student',
+            id: studentId
+          }));
 
-          // Notify teacher a new student joined
-          const teacher = rooms[room].teacher;
-          if (teacher && teacher.readyState === WebSocket.OPEN) {
-            teacher.send(JSON.stringify({ type: 'student-joined', id: studentId }));
+          // Notify teacher about new student
+          if (currentRoom.teacher && currentRoom.teacher.readyState === WebSocket.OPEN) {
+            currentRoom.teacher.send(JSON.stringify({
+              type: 'student-joined',
+              id: studentId
+            }));
           }
-          console.log(`Student ${studentId} joined room ${room}`);
         }
         break;
 
       case 'offer':
-        if (ws.role === 'teacher' && to) {
-          // Send offer from teacher to specific student
-          const studentWs = rooms[room].students[to];
-          if (studentWs && studentWs.readyState === WebSocket.OPEN) {
-            studentWs.send(JSON.stringify({ type: 'offer', payload }));
-            console.log(`Offer sent from teacher to student ${to} in room ${room}`);
+        if (ws.role === 'teacher' && to && currentRoom.students.has(to)) {
+          const studentWs = currentRoom.students.get(to);
+          if (studentWs.readyState === WebSocket.OPEN) {
+            studentWs.send(JSON.stringify({
+              type: 'offer',
+              payload,
+              from: 'teacher'
+            }));
           }
         }
         break;
 
       case 'answer':
-        if (ws.role === 'student') {
-          const teacher = rooms[room].teacher;
-          if (teacher && teacher.readyState === WebSocket.OPEN) {
-            teacher.send(JSON.stringify({ type: 'answer', payload, from: ws.id }));
-            console.log(`Answer sent from student ${ws.id} to teacher in room ${room}`);
-          }
+        if (ws.role === 'student' && currentRoom.teacher && currentRoom.teacher.readyState === WebSocket.OPEN) {
+          currentRoom.teacher.send(JSON.stringify({
+            type: 'answer',
+            payload,
+            from: ws.id
+          }));
         }
         break;
 
       case 'candidate':
-        if (ws.role === 'teacher' && to) {
-          // Candidate from teacher to specific student
-          const studentWs = rooms[room].students[to];
-          if (studentWs && studentWs.readyState === WebSocket.OPEN) {
-            studentWs.send(JSON.stringify({ type: 'candidate', payload }));
-            console.log(`Candidate sent from teacher to student ${to} in room ${room}`);
+        if (ws.role === 'teacher' && to && currentRoom.students.has(to)) {
+          const studentWs = currentRoom.students.get(to);
+          if (studentWs.readyState === WebSocket.OPEN) {
+            studentWs.send(JSON.stringify({
+              type: 'candidate',
+              payload,
+              from: 'teacher'
+            }));
           }
-        } else if (ws.role === 'student') {
-          // Candidate from student to teacher
-          const teacher = rooms[room].teacher;
-          if (teacher && teacher.readyState === WebSocket.OPEN) {
-            teacher.send(JSON.stringify({ type: 'candidate', payload, from: ws.id }));
-            console.log(`Candidate sent from student ${ws.id} to teacher in room ${room}`);
-          }
+        } else if (ws.role === 'student' && currentRoom.teacher && currentRoom.teacher.readyState === WebSocket.OPEN) {
+          currentRoom.teacher.send(JSON.stringify({
+            type: 'candidate',
+            payload,
+            from: ws.id
+          }));
         }
         break;
 
       case 'leave':
-        // client leaving voluntarily
+        // Student or teacher leave handling
         if (ws.role === 'student') {
-          delete rooms[room].students[ws.id];
-          // Notify teacher
-          const teacher = rooms[room].teacher;
-          if (teacher && teacher.readyState === WebSocket.OPEN) {
-            teacher.send(JSON.stringify({ type: 'student-left', id: ws.id }));
+          if (currentRoom.students.has(ws.id)) {
+            currentRoom.students.delete(ws.id);
+            if (currentRoom.teacher && currentRoom.teacher.readyState === WebSocket.OPEN) {
+              currentRoom.teacher.send(JSON.stringify({
+                type: 'student-left',
+                id: ws.id
+              }));
+            }
           }
-          console.log(`Student ${ws.id} left room ${room}`);
+          ws.room = null;
+          ws.id = null;
+          ws.role = null;
         } else if (ws.role === 'teacher') {
-          // Teacher leaves, notify all students
-          const students = rooms[room].students;
-          Object.values(students).forEach(s => {
-            if (s.readyState === WebSocket.OPEN) {
-              s.send(JSON.stringify({ type: 'teacher-left' }));
+          // Notify all students teacher left
+          currentRoom.students.forEach(studentWs => {
+            if (studentWs.readyState === WebSocket.OPEN) {
+              studentWs.send(JSON.stringify({ type: 'teacher-left' }));
+              studentWs.room = null;
+              studentWs.id = null;
+              studentWs.role = null;
             }
           });
           delete rooms[room];
-          console.log(`Teacher left and room ${room} closed`);
+          ws.room = null;
+          ws.id = null;
+          ws.role = null;
         }
         break;
     }
   });
 
   ws.on('close', () => {
-    const room = ws.room;
-    if (!room || !rooms[room]) return;
+    if (!ws.room || !rooms[ws.room]) return;
+    const currentRoom = rooms[ws.room];
 
     if (ws.role === 'teacher') {
-      // Teacher disconnected, notify all students and remove room
-      const students = rooms[room].students;
-      Object.values(students).forEach(s => {
-        if (s.readyState === WebSocket.OPEN) {
-          s.send(JSON.stringify({ type: 'teacher-left' }));
+      // Notify all students teacher left
+      currentRoom.students.forEach(studentWs => {
+        if (studentWs.readyState === WebSocket.OPEN) {
+          studentWs.send(JSON.stringify({ type: 'teacher-left' }));
+          studentWs.room = null;
+          studentWs.id = null;
+          studentWs.role = null;
         }
       });
-      delete rooms[room];
-      console.log(`Teacher disconnected and room ${room} closed`);
+      delete rooms[ws.room];
     } else if (ws.role === 'student') {
-      // Remove student and notify teacher
-      delete rooms[room].students[ws.id];
-      const teacher = rooms[room].teacher;
-      if (teacher && teacher.readyState === WebSocket.OPEN) {
-        teacher.send(JSON.stringify({ type: 'student-left', id: ws.id }));
+      if (currentRoom.students.has(ws.id)) {
+        currentRoom.students.delete(ws.id);
+        if (currentRoom.teacher && currentRoom.teacher.readyState === WebSocket.OPEN) {
+          currentRoom.teacher.send(JSON.stringify({
+            type: 'student-left',
+            id: ws.id
+          }));
+        }
       }
-      console.log(`Student ${ws.id} disconnected from room ${room}`);
     }
+
+    ws.room = null;
+    ws.id = null;
+    ws.role = null;
   });
 });
 
