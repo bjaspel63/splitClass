@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SplitClass - Screen Share + Editor</title>
+  <link rel="stylesheet" href="style.css" />
+
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>SplitClass</h1>
+      <p>Teacher shares screen left, editor on right</p>
+    </header>
+
+    <section id="setup">
+      <label>
+        Room Name:
+        <input id="roomInput" type="text" placeholder="Enter room name" />
+      </label>
+      <div>
+        <button id="btnTeacher">Start as Teacher</button>
+        <button id="btnStudent">Join as Student</button>
+      </div>
+      <p id="status"></p>
+    </section>
+
+    <section id="main" class="hidden">
+      <div id="leftPane">
+        <video id="video" autoplay playsinline></video>
+        <p id="teacherDisconnected" class="hidden">Teacher disconnected.</p>
+      </div>
+      <div id="rightPane">
+        <iframe id="editorFrame" src="https://trinket.io/embed/python/3a1c9f3e1c" frameborder="0"></iframe>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
