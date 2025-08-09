@@ -1,227 +1,156 @@
-const signalingUrl = "wss://splitclass-production.up.railway.app";
+// Select elements
+const appTitle = document.getElementById("appTitle");
+const roomDisplay = document.getElementById("roomDisplay");
 
-const joinPage = document.getElementById("joinPage");
-const roomPage = document.getElementById("roomPage");
-
-const studentNameInput = document.getElementById("studentNameInput");
+const setupSection = document.getElementById("setup");
+const nameInput = document.getElementById("nameInput");
 const roomInput = document.getElementById("roomInput");
 const btnTeacher = document.getElementById("btnTeacher");
 const btnStudent = document.getElementById("btnStudent");
 const status = document.getElementById("status");
 
-const roomHeaderName = document.getElementById("headerRoomName");
-const teacherButtons = document.getElementById("teacherButtons");
-const studentButtons = document.getElementById("studentButtons");
-
-const btnShareScreen = document.getElementById("btnShareScreen");
+const teacherView = document.getElementById("teacherView");
+const teacherStudentCount = document.getElementById("teacherStudentCount");
+const studentsList = document.getElementById("studentsList");
+const teacherNotes = document.getElementById("teacherNotes");
 const btnDownloadNotes = document.getElementById("btnDownloadNotes");
-const btnCloseSessionTeacher = document.getElementById("btnCloseSession");
+const btnShareScreen = document.getElementById("btnShareScreen");
+const btnCloseSessionTeacher = document.getElementById("btnCloseSessionTeacher");
+
+const studentView = document.getElementById("studentView");
+const studentVideo = document.getElementById("studentVideo");
 const btnCloseSessionStudent = document.getElementById("btnCloseSessionStudent");
 
-const teacherLeftPane = document.getElementById("teacherLeftPane");
-const teacherRightPane = document.getElementById("teacherRightPane");
-const studentLeftPane = document.getElementById("studentLeftPane");
-const studentRightPane = document.getElementById("studentRightPane");
+// App state
+let currentRole = null; // "teacher" or "student"
+let currentRoom = null;
+let currentName = null;
 
-const studentsList = document.getElementById("studentsList");
-const notesArea = document.getElementById("notesArea");
-const video = document.getElementById("video");
-const editorFrame = document.getElementById("editorFrame");
-
-let ws = null;
-let roomName = null;
-let isTeacher = false;
-let screenStream = null;
-let isSharing = false;
-const teacherPeers = {};
-let studentPc = null;
-let studentId = null;
-let studentName = null;
-
-const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
-
-/* --- UI Management --- */
-
-function switchToRoomPage() {
-  joinPage.style.display = "none";
-  roomPage.style.display = "flex";
-}
-
-function switchToJoinPage() {
-  roomPage.style.display = "none";
-  joinPage.style.display = "flex";
-  resetAll();
-}
-
-function setupTeacherLayout() {
-  // Show teacher panes
-  teacherLeftPane.style.display = "block";
-  teacherRightPane.style.display = "flex";
-
-  // Hide student panes
-  studentLeftPane.style.display = "none";
-  studentRightPane.style.display = "none";
-
-  // Show teacher buttons, hide student buttons
-  teacherButtons.style.display = "flex";
-  studentButtons.style.display = "none";
-
-  // Set room name in header
-  roomHeaderName.textContent = roomName;
-
-  // Clear notes area and students list
-  notesArea.value = "";
-  updateStudentCountUI();
-}
-
-function setupStudentLayout() {
-  // Show student panes
-  studentLeftPane.style.display = "block";
-  studentRightPane.style.display = "block";
-
-  // Hide teacher panes
-  teacherLeftPane.style.display = "none";
-  teacherRightPane.style.display = "none";
-
-  // Show student buttons, hide teacher buttons
-  studentButtons.style.display = "block";
-  teacherButtons.style.display = "none";
-
-  // Set room name in header
-  roomHeaderName.textContent = roomName;
-
-  // Clear video src and notes
-  video.srcObject = null;
-  notesArea.value = "";
+function resetApp() {
+  // Clear inputs and status
+  nameInput.value = "";
+  roomInput.value = "";
+  status.textContent = "";
+  teacherNotes.value = "";
   studentsList.innerHTML = "";
+  teacherStudentCount.textContent = "0";
+  studentVideo.srcObject = null;
+
+  // Reset UI to setup
+  setupSection.classList.remove("hidden");
+  teacherView.classList.add("hidden");
+  studentView.classList.add("hidden");
+  roomDisplay.classList.add("hidden");
+  appTitle.textContent = "SplitClass + Trinket";
+
+  currentRole = null;
+  currentRoom = null;
+  currentName = null;
 }
 
-function updateStudentCountUI() {
-  studentsList.innerHTML = "";
-  const count = Object.keys(teacherPeers).length;
-  if (count === 0) {
-    studentsList.innerHTML = "<li>No students connected</li>";
-  } else {
-    Object.values(teacherPeers).forEach(({ name }) => {
-      const li = document.createElement("li");
-      li.textContent = name || "Anonymous";
-      studentsList.appendChild(li);
-    });
-  }
-}
-
-/* --- Signaling and WebRTC ---
-
-(Keep your existing signaling, offer, answer, candidate handlers here,
-adjust event handlers below as needed to update UI) */
-
-/* --- Event Handlers --- */
-
+// On teacher start
 btnTeacher.addEventListener("click", () => {
-  roomName = roomInput.value.trim();
-  studentName = studentNameInput.value.trim() || "Teacher";
-  if (!roomName) {
+  const name = nameInput.value.trim() || "Teacher";
+  const room = roomInput.value.trim();
+
+  if (!room) {
     status.textContent = "Please enter a room name.";
     return;
   }
-  isTeacher = true;
-  connectSignaling(roomName, "teacher", { name: studentName });
-  switchToRoomPage();
-  setupTeacherLayout();
-  status.textContent = "Connecting as teacher...";
+
+  currentRole = "teacher";
+  currentRoom = room;
+  currentName = name;
+
+  // Update UI
+  setupSection.classList.add("hidden");
+  teacherView.classList.remove("hidden");
+  studentView.classList.add("hidden");
+
+  appTitle.textContent = "SplitClass + Trinket";
+  roomDisplay.textContent = `Room: ${room}`;
+  roomDisplay.classList.remove("hidden");
+
+  status.textContent = "";
+
+  // (Here you can initialize signaling and other logic)
+  // For demo, simulate some students:
+  simulateStudents();
 });
 
+// On student join
 btnStudent.addEventListener("click", () => {
-  roomName = roomInput.value.trim();
-  studentName = studentNameInput.value.trim();
-  if (!roomName) {
+  const name = nameInput.value.trim();
+  const room = roomInput.value.trim();
+
+  if (!room) {
     status.textContent = "Please enter a room name.";
     return;
   }
-  if (!studentName) {
+  if (!name) {
     status.textContent = "Please enter your name.";
     return;
   }
-  isTeacher = false;
-  connectSignaling(roomName, "student", { name: studentName });
-  switchToRoomPage();
-  setupStudentLayout();
-  status.textContent = "Connecting as student...";
+
+  currentRole = "student";
+  currentRoom = room;
+  currentName = name;
+
+  // Update UI
+  setupSection.classList.add("hidden");
+  teacherView.classList.add("hidden");
+  studentView.classList.remove("hidden");
+
+  appTitle.textContent = "SplitClass + Trinket";
+  roomDisplay.textContent = `Room: ${room}`;
+  roomDisplay.classList.remove("hidden");
+
+  status.textContent = "";
+
+  // (Here you can initialize signaling and other logic)
 });
 
-btnShareScreen.addEventListener("click", () => {
-  if (isSharing) {
-    stopScreenShare();
-  } else {
-    startScreenShare();
+// Close session handlers
+btnCloseSessionTeacher.addEventListener("click", () => {
+  if (confirm("Are you sure you want to close the session?")) {
+    resetApp();
   }
 });
 
+btnCloseSessionStudent.addEventListener("click", () => {
+  if (confirm("Leave session and return to home?")) {
+    resetApp();
+  }
+});
+
+// Download notes button
 btnDownloadNotes.addEventListener("click", () => {
-  const blob = new Blob([notesArea.value], { type: "text/plain" });
+  const notes = teacherNotes.value.trim();
+  if (!notes) {
+    alert("No notes to download.");
+    return;
+  }
+
+  const blob = new Blob([notes], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${roomName || "notes"}.txt`;
+  a.download = `notes_${currentRoom || "session"}.txt`;
   a.click();
   URL.revokeObjectURL(url);
 });
 
-btnCloseSessionTeacher.addEventListener("click", () => {
-  closeSession();
-  switchToJoinPage();
-});
-
-btnCloseSessionStudent.addEventListener("click", () => {
-  closeSession();
-  switchToJoinPage();
-});
-
-/* --- Reset State --- */
-
-function resetAll() {
-  // Reset everything
-  status.textContent = "";
-  roomName = null;
-  studentName = null;
-  isTeacher = false;
-  isSharing = false;
-  screenStream?.getTracks().forEach(t => t.stop());
-  screenStream = null;
-
-  // Close all peer connections
-  Object.values(teacherPeers).forEach(({ pc }) => {
-    pc?.close();
-  });
-  for (const key in teacherPeers) delete teacherPeers[key];
-  studentPc?.close();
-  studentPc = null;
-
-  // Clear UI elements
+// Dummy function to simulate students in teacher view
+function simulateStudents() {
+  const fakeStudents = ["Alice", "Bob", "Charlie"];
   studentsList.innerHTML = "";
-  notesArea.value = "";
-  video.srcObject = null;
-  editorFrame.src = "https://trinket.io/embed/python3"; // Reset iframe if needed
-
-  // Reset input fields
-  studentNameInput.value = "";
-  roomInput.value = "";
-
-  // Hide all panes/buttons initially
-  teacherLeftPane.style.display = "none";
-  teacherRightPane.style.display = "none";
-  studentLeftPane.style.display = "none";
-  studentRightPane.style.display = "none";
-  teacherButtons.style.display = "none";
-  studentButtons.style.display = "none";
+  fakeStudents.forEach(name => {
+    const li = document.createElement("li");
+    li.textContent = name;
+    studentsList.appendChild(li);
+  });
+  teacherStudentCount.textContent = fakeStudents.length;
 }
 
-/* --- You should keep your existing signaling and WebRTC code here --- */
-/* --- Add signaling event handlers to update teacherPeers and UI accordingly --- */
-/* --- Call updateStudentCountUI() inside relevant signaling events --- */
-/* --- Also handle screen share start/stop, offerToStudent(), handleOfferAsStudent(), etc. --- */
-
-/* --- Init --- */
-
-switchToJoinPage();
-status.textContent = "Enter your name, room name and select role to join.";
+// Initialize app on load
+resetApp();
