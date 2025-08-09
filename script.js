@@ -460,6 +460,10 @@ function stopScreenShare() {
 /* --- Close session --- */
 
 function closeSession() {
+  if (!confirm("Are you sure you want to close the session?")) {
+    return; // User canceled, do nothing
+  }
+
   if (ws) {
     try {
       sendSignal({ type: "leave", room: roomName });
@@ -512,7 +516,6 @@ function closeSession() {
   roomName = null;
   isTeacher = false;
   isSharing = false;
-  hasError = false;
   studentsList.innerHTML = "";
   notesArea.value = "";
 
@@ -530,7 +533,6 @@ function closeSession() {
   btnTeacher.classList.remove("hidden");
   btnStudent.classList.remove("hidden");
 }
-
 /* --- Event listeners --- */
 
 btnTeacher.addEventListener("click", () => {
