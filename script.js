@@ -228,6 +228,14 @@ function connectSignaling(room, role, extraPayload = {}) {
 
         roomName = room;
         studentName = extraPayload.name || "Anonymous";
+        
+        const roomNameDisplay = document.getElementById("roomNameDisplay");
+  				if (roomNameDisplay) {
+    			roomNameDisplay.style.display = "block";
+    		roomNameDisplay.textContent = roomName;
+  			}
+
+ 
 
         btnTeacher.classList.add("hidden");
         btnStudent.classList.add("hidden");
