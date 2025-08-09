@@ -1,4 +1,5 @@
-const signalingUrl = "wss://splitclass-production.up.railway.app";
+const signalingUrl = "wss://splitclass-production.up.railway.app"; 
+
 const video = document.getElementById("video");
 const roomInput = document.getElementById("roomInput");
 const btnTeacher = document.getElementById("btnTeacher");
@@ -47,7 +48,6 @@ function connectSignaling(room, role) {
     if (data.type === "joined") {
       status.textContent = `Joined room as ${data.role}.`;
       if (role === "teacher") {
-        // Enable share screen button when teacher joined
         btnShareScreen.disabled = false;
       }
     } else if (data.type === "new-student" && role === "teacher") {
@@ -122,6 +122,16 @@ async function handleAnswer(answer) {
 }
 
 async function startSharing() {
+  // Close old connection and stop old stream if exist
+  if (pc) {
+    pc.close();
+    pc = null;
+  }
+  if (screenStream) {
+    screenStream.getTracks().forEach((track) => track.stop());
+    screenStream = null;
+  }
+
   try {
     screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
@@ -144,13 +154,13 @@ async function startSharing() {
     btnShareScreen.textContent = "Stop Sharing";
     isSharing = true;
 
-    // Fullscreen UI
     document.getElementById("leftPane").classList.add("fullscreen");
 
-    // When user stops sharing via browser UI
     screenStream.getVideoTracks()[0].addEventListener("ended", () => {
       stopSharing();
     });
+
+    await createOfferToStudents();
   } catch (err) {
     alert("Screen share permission denied or error: " + err.message);
     status.textContent = "Screen share permission denied.";
@@ -177,6 +187,20 @@ function stopSharing() {
   isSharing = false;
 }
 
+// Update UI buttons visibility based on role
+function updateUIForRole() {
+  if (isTeacher) {
+    btnStudent.style.display = "none";
+    btnTeacher.style.display = "inline-block";
+    btnShareScreen.style.display = "inline-block";
+    btnShareScreen.disabled = false;
+  } else {
+    btnStudent.style.display = "inline-block";
+    btnTeacher.style.display = "none";
+    btnShareScreen.style.display = "none";
+  }
+}
+
 btnTeacher.onclick = () => {
   const val = roomInput.value.trim();
   if (!val) {
@@ -185,6 +209,7 @@ btnTeacher.onclick = () => {
   }
   roomName = val;
   isTeacher = true;
+  updateUIForRole();
   connectSignaling(roomName, "teacher");
 };
 
@@ -196,6 +221,7 @@ btnStudent.onclick = () => {
   }
   roomName = val;
   isTeacher = false;
+  updateUIForRole();
   connectSignaling(roomName, "student");
 };
 
