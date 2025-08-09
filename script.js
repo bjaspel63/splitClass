@@ -78,13 +78,13 @@ function updateUIForRole() {
   } else {
     pdfViewerContainer.classList.add("hidden");
     btnClearPdf.style.display = "none";
-  }
-} else {
+  } 
+  }else {
   // Hide for students
   pdfUploadInput.style.display = "none";
   pdfViewerContainer.classList.add("hidden");
   btnClearPdf.style.display = "none";
-}
+}}
 
     leftPane.classList.remove("student-full");
     leftPane.classList.add("teacher-no-video");
