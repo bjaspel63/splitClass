@@ -147,6 +147,7 @@ header {
   border-radius: 0.75rem;
   overflow-y: auto;
   color: #1e293b;
+  transition: width 0.3s ease;
 }
 
 /* Teacher: 25% width for student list */
@@ -205,6 +206,7 @@ header {
   flex-direction: column;
   border-radius: 0.75rem;
   overflow: hidden;
+  transition: width 0.3s ease;
 }
 
 /* Teacher: 75% width for notes */
@@ -221,6 +223,7 @@ header {
   padding: 0;
 }
 
+/* Notes text area */
 #notesArea {
   width: 100%;
   flex-grow: 1;
@@ -231,18 +234,15 @@ header {
   font-size: 1.1rem;
   color: #1e293b;
   resize: none;
+  background: white;
 }
 
+/* Editor iframe */
 #editorFrame {
   width: 100%;
   height: 100%;
   border: none;
   border-radius: 0.75rem;
-}
-
-/* Show/hide elements */
-.hidden {
-  display: none !important;
 }
 
 /* Controls shared by teacher and student */
@@ -252,6 +252,16 @@ header {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+  transition: opacity 0.3s ease;
+}
+
+/* Hide controls by default */
+#teacherControls.hidden,
+#studentControls.hidden {
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
 }
 
 /* Teacher buttons */
@@ -266,8 +276,14 @@ header {
   transition: background-color 0.25s ease;
 }
 
-#teacherControls button:hover {
+#teacherControls button:hover:enabled {
   background: #1e40af;
+}
+
+/* Disabled state for share screen button */
+#btnShareScreen:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
 }
 
 /* Student close button */
@@ -311,10 +327,7 @@ header {
     height: 40vh;
   }
 
-  #notesArea {
-    height: 100%;
-  }
-
+  #notesArea,
   #editorFrame {
     height: 100%;
   }
