@@ -161,6 +161,7 @@ header {
 #pdfViewerContainer {
   border: 1px solid #ccc;
   background: #fff;
+  height: 100%;
 }
 
 /* Main Section Layout */
