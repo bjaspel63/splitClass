@@ -384,7 +384,7 @@ header {
   #pdfViewerContainer {
     flex: 1 1 auto;
     overflow: auto;
-    
+    min-height:0;
     height:100%;
   }
   
